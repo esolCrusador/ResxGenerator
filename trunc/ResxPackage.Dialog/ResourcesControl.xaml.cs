@@ -1,25 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Resources;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Common.Excel.Models;
 using EnvDTE;
-using EnvDTE100;
-using GloryS.ResourcesPackage.Dialog;
 using ResourcesAutogenerate;
+using ResxPackage.Dialog;
 
 namespace GloryS.ResourcesPackage
 {
@@ -34,9 +26,9 @@ namespace GloryS.ResourcesPackage
 
         public ResourcesControl(IResourceMerge resourceMerge, Solution dte, ILogger outputWindowLogger)
         {
-            _resourceMerge = resourceMerge;
             InitializeComponent();
 
+            _resourceMerge = resourceMerge;
             _logMessages = new List<string>();
             ILogger combinedLogger = new CombinedLogger(outputWindowLogger, new DialogLogger(_logMessages));
             resourceMerge.SetLogger(combinedLogger);
@@ -44,7 +36,25 @@ namespace GloryS.ResourcesPackage
             InitializeData(dte);
         }
 
-        public ResourcesVM ViewModel { get; set; }
+        public ResourcesVm ViewModel { get; set; }
+
+        public override void EndInit()
+        {
+            base.EndInit();
+
+            this.GenResxIcon.Source = GetImageSource(DialogRes.ResxGen);
+            this.ExportToExcelIcon.Source = GetImageSource(DialogRes.ExportToExcel);
+            this.ImportFromExcelIcon.Source = GetImageSource(DialogRes.ImpotrFromExcel);
+        }
+
+        private ImageSource GetImageSource(Bitmap bitMap)
+        {
+            return System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                bitMap.GetHbitmap(),
+                IntPtr.Zero,
+                Int32Rect.Empty,
+                BitmapSizeOptions.FromWidthAndHeight(bitMap.Width, bitMap.Height));
+        }
 
         private void InitializeData(Solution solution)
         {
@@ -66,7 +76,7 @@ namespace GloryS.ResourcesPackage
                 .Distinct()
                 .ToList();
 
-            ViewModel = new ResourcesVM(CultureInfo.GetCultures(CultureTypes.NeutralCultures), supportedCultures, projectsList);
+            ViewModel = new ResourcesVm(CultureInfo.GetCultures(CultureTypes.NeutralCultures), supportedCultures, projectsList);
 
             this.DataContext = ViewModel;
         }

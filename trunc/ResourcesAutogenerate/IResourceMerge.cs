@@ -6,6 +6,8 @@ namespace ResourcesAutogenerate
 {
     public interface IResourceMerge
     {
+        void SetLogger(ILogger logger);
+
         void UpdateResources(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, bool removeFiles = true);
 
         FileInfoContainer ExportToExcelFile(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, string title);

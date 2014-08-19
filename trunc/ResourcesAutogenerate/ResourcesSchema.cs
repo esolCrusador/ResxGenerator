@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Resources;
 using Common.Excel.Contracts;
 using Common.Excel.Models;
@@ -18,9 +19,16 @@ namespace ResourcesAutogenerate
 
         private readonly IExcelGenerator _excelGenerator;
 
+        private ILogger _logger;
+
         public ResourcesSchema(IExcelGenerator excelGenerator)
         {
             _excelGenerator = excelGenerator;
+        }
+
+        public void SetLogger(ILogger logger)
+        {
+            _logger = logger;
         }
 
         public void UpdateResources(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, bool removeFiles = true)
@@ -39,7 +47,7 @@ namespace ResourcesAutogenerate
                 foreach (Dictionary<int, ResourceData> resourceFileGroup in projectResources.Resources.Values)
                 {
                     var projectItems2Remove = resourceFileGroup.Where(f => !selectedCultureInfos.ContainsKey(f.Key))
-                        .Join(project.ProjectItems.Cast<ProjectItem>(), f => f.Value.ResourcePath, item => item.FileNames[0], (f, item) => new {ProjectItem = item, CultureId = f.Key})
+                        .Join(project.GetAllItems(), f => f.Value.ResourcePath, item => item.FileNames[0], (f, item) => new { ProjectItem = item, CultureId = f.Key })
                         .ToList();
 
                     var cultures2Add = selectedCultureInfos.Where(cult => !resourceFileGroup.ContainsKey(cult.Key)).Select(cult => cult.Value).ToList();
@@ -48,6 +56,8 @@ namespace ResourcesAutogenerate
                     {
                         foreach (var projectItem in projectItems2Remove)
                         {
+                            _logger.Log(String.Format("Removed resource file {0}", projectItem.ProjectItem.FileNames[0]));
+
                             projectItem.ProjectItem.Delete();
                             resourceFileGroup.Remove(projectItem.CultureId);
                         }
@@ -69,10 +79,12 @@ namespace ResourcesAutogenerate
                             resourcePath: resourcePath,
                             culture: cultureInfo,
                             projectItem: projectItem,
-                            resources: new Dictionary<string, string>(0)
+                            resources: new Dictionary<string, ResXDataNode>(0)
                             );
 
                         resourceFileGroup.Add(cultureInfo.LCID, newFile);
+
+                        _logger.Log(String.Format("Added new resource {0}", newFile.ResourcePath));
                     }
 
                     var otherCultureResources = resourceFileGroup.Where(resData => resData.Key != InvariantCultureId).Select(resData => resData.Value).ToList();
@@ -116,14 +128,15 @@ namespace ResourcesAutogenerate
                     GroupTitle = proj.ProjectName,
                     Tables = proj.Resources.Select(res =>
                     {
-                        var neutralResources = res.Value[InvariantCultureId].Resources;
+                        var neutralResources = res.Value[InvariantCultureId].StringResources;
                         List<string> keysOrder = neutralResources.Keys.OrderBy(key => key).ToList();
 
                         List<RowModel<ResExcelModel>> rows = keysOrder.Select(
                             resKey => new RowModel<ResExcelModel>
                             {
-                                Model = new ResExcelModel(resKey, culturesOrder.Select(cultureId => res.Value[cultureId]).Select(resData => resData.Resources[resKey]).ToList())
+                                Model = new ResExcelModel(resKey, culturesOrder.Select(cultureId => res.Value[cultureId]).Select(resData => resData.StringResources[resKey].Value).ToList())
                             })
+                            .Where(r => r.Model.ResourceValues.Count != 0)
                             .ToList();
 
                         var tableModel = new ResTableModel<ResExcelModel>
@@ -194,24 +207,33 @@ namespace ResourcesAutogenerate
             }
         }
 
-        private void UpdateResourceFile(ResourceData resData, Dictionary<string, string> excelResData)
+        private void UpdateResourceFile(ResourceData resData, IReadOnlyDictionary<string, string> excelResData)
         {
-            var resourcesJoin = resData.Resources
+            //We need to compare only string resources.
+            var resourcesJoin = resData.StringResources
                 .Join(excelResData, res => res.Key, resExcel => resExcel.Key,
                     (res, resExcel) => new { Key = res.Key, Value = res.Value, ExcelValue = resExcel.Value })
                 .ToList();
-            if (resData.Resources.Count != resourcesJoin.Count)
+            if (resData.StringResources.Count != resourcesJoin.Count)
             {
                 throw new MissingManifestResourceException("There are some missed resources");
             }
 
-            if (resourcesJoin.Any(res => res.Value != res.ExcelValue))
+            if (resourcesJoin.Any(res => res.ExcelValue != res.Value.Value))
             {
+                _logger.Log(String.Format("Updated resource content of {0}", resData.ResourcePath));
+
                 using (var writer = new ResXResourceWriter(resData.ResourcePath))
                 {
-                    foreach (var keyValuePair in resourcesJoin)
+                    //Adding not string resource types.
+                    var resourcesData = resData.FileResources
+                        .Concat(resourcesJoin.Select(kvp =>
+                            new KeyValuePair<string, ResXDataNode>(kvp.Key, new ResXDataNode(kvp.Key, kvp.ExcelValue) {Comment = kvp.Value.Comment}))
+                        );
+
+                    foreach (var keyValuePair in resourcesData)
                     {
-                        writer.AddResource(keyValuePair.Key, keyValuePair.ExcelValue);
+                        writer.AddResource(keyValuePair.Key, keyValuePair.Value);
                     }
                 }
             }
@@ -219,14 +241,16 @@ namespace ResourcesAutogenerate
 
         private void UpdateResourceFiles(ResourceData neutralCulture, IEnumerable<ResourceData> cultureFiles)
         {
-            Dictionary<string, string> neutralCultureResources = neutralCulture.Resources;
+            IReadOnlyDictionary<string, ResXDataNode> neutralCultureResources = neutralCulture.Resources;
 
             foreach (var resourceFileInfo in cultureFiles)
             {
-                Dictionary<string, string> cultResources = resourceFileInfo.Resources;
+                IReadOnlyDictionary<string, ResXDataNode> cultResources = resourceFileInfo.Resources;
 
                 if (!cultResources.Keys.OrderBy(k => k).SequenceEqual(neutralCultureResources.Keys.OrderBy(k => k)))
                 {
+                    _logger.Log(String.Format("Updated resource content of {0}", resourceFileInfo.ResourcePath));
+
                     using (var writer = new ResXResourceWriter(resourceFileInfo.ResourcePath))
                     {
                         var resources = cultResources.Where(res => neutralCultureResources.ContainsKey(res.Key))
@@ -235,7 +259,7 @@ namespace ResourcesAutogenerate
 
                         foreach (var keyValuePair in resources)
                         {
-                            writer.AddResource(keyValuePair.Key, keyValuePair.Value);
+                                writer.AddResource(keyValuePair.Key, keyValuePair.Value);
                         }
                     }
                 }
@@ -252,17 +276,17 @@ namespace ResourcesAutogenerate
         }
 
 
-        private Dictionary<string, string> GetResourceContent(string fileName)
+        private Dictionary<string, ResXDataNode> GetResourceContent(string fileName)
         {
-            var cultResources = new Dictionary<string, string>();
+            var cultResources = new Dictionary<string, ResXDataNode>();
 
-            using (var reader = new ResXResourceReader(fileName))
+            using (var reader = new ResXResourceReader(fileName){BasePath = Path.GetDirectoryName(fileName), UseResXDataNodes = true})
             {
                 var enumerator = reader.GetEnumerator();
 
                 while (enumerator.MoveNext())
                 {
-                    cultResources.Add((string) enumerator.Key, (string) enumerator.Value);
+                    cultResources.Add((string) enumerator.Key, (ResXDataNode)enumerator.Value);
                 }
             }
 
@@ -291,7 +315,7 @@ namespace ResourcesAutogenerate
                         ProjectName = project.Name,
                         ProjectId = project.UniqueName,
 
-                        Resources = GetProjectItems(project.ProjectItems.Cast<ProjectItem>())
+                        Resources = project.GetAllItems()
                             .Where(projItem => Path.GetExtension(projItem.FileNames[0]) == ".resx")
 
                             .Select(projItem =>
@@ -318,13 +342,6 @@ namespace ResourcesAutogenerate
                     })
                     .ToList()
             };
-        }
-
-        private IEnumerable<ProjectItem> GetProjectItems(IEnumerable<ProjectItem> projectItems)
-        {
-            var projectsList = projectItems as IList<ProjectItem> ?? projectItems.ToList();
-
-            return projectsList.Concat(projectsList.SelectMany(pi => GetProjectItems(pi.ProjectItems.Cast<ProjectItem>())));
         }
     }
 }

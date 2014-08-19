@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace GloryS.ResourcesPackage {
+namespace ResxPackage.Dialog {
     using System;
     
     
@@ -22,24 +22,24 @@ namespace GloryS.ResourcesPackage {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class DialogRes {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resources() {
+        internal DialogRes() {
         }
         
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("GloryS.ResourcesPackage.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ResxPackage.Dialog.DialogRes", typeof(DialogRes).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -51,7 +51,7 @@ namespace GloryS.ResourcesPackage {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -61,29 +61,32 @@ namespace GloryS.ResourcesPackage {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Can not create tool window..
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static string CanNotCreateWindow {
+        public static System.Drawing.Bitmap ExportToExcel {
             get {
-                return ResourceManager.GetString("CanNotCreateWindow", resourceCulture);
+                object obj = ResourceManager.GetObject("ExportToExcel", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Resx Generator: {0}.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static string ResourcesPackageErrorWithPrefix {
+        public static System.Drawing.Bitmap ImpotrFromExcel {
             get {
-                return ResourceManager.GetString("ResourcesPackageErrorWithPrefix", resourceCulture);
+                object obj = ResourceManager.GetObject("ImpotrFromExcel", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Resx Generator.
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static string ToolWindowTitle {
+        public static System.Drawing.Bitmap ResxGen {
             get {
-                return ResourceManager.GetString("ToolWindowTitle", resourceCulture);
+                object obj = ResourceManager.GetObject("ResxGen", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

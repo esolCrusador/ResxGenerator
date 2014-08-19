@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Data;
 using System.Windows;
 using System.Runtime.InteropServices;
+using System.Windows.Controls;
 using Common.Excel.Implementation;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -23,12 +24,12 @@ namespace GloryS.ResourcesPackage
     /// implementation of the IVsUIElementPane interface.
     /// </summary>
     [Guid("9dd4acb2-a9e3-4dd9-8e60-e59cdae1f617")]
-    public class ResourcesToolWindow : ToolWindowPane
+    public class ResourcesToolWindow : WpfToolWindowPane
     {
         /// <summary>
         /// Standard constructor for the tool window.
         /// </summary>
-        public ResourcesToolWindow() : base(null)
+        public ResourcesToolWindow()
         {
             // Set the window title reading it from the resources.
             this.Caption = Resources.ToolWindowTitle;
@@ -44,9 +45,15 @@ namespace GloryS.ResourcesPackage
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on 
             // the object returned by the Content property.
 
-            DTE dte = (DTE)ServiceProvider.GlobalProvider.GetService(typeof(DTE));
 
-            base.Content = new ResourcesControl(new ResourcesSchema(new ExcelGenerator()), dte.Solution);
+        }
+
+        protected override Control CreateToolWindowControl()
+        {
+            var dte = (DTE)ServiceProvider.GlobalProvider.GetService(typeof(DTE));
+            var outputWindow = (IVsOutputWindow)ServiceProvider.GlobalProvider.GetService(typeof(SVsOutputWindow));
+
+            return new ResourcesControl(new ResourcesSchema(new ExcelGenerator()), dte.Solution, new OutputWindowLogger(outputWindow));
         }
     }
 }

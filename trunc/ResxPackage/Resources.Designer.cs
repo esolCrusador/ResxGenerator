@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace GloryS.ResourcesPackage {
+namespace GloryS.ResxPackage {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace GloryS.ResourcesPackage {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("GloryS.ResourcesPackage.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("GloryS.ResxPackage.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,29 +61,11 @@ namespace GloryS.ResourcesPackage {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Can not create tool window..
-        /// </summary>
-        internal static string CanNotCreateWindow {
-            get {
-                return ResourceManager.GetString("CanNotCreateWindow", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Resx Generator: {0}.
         /// </summary>
         internal static string ResourcesPackageErrorWithPrefix {
             get {
                 return ResourceManager.GetString("ResourcesPackageErrorWithPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Resx Generator.
-        /// </summary>
-        internal static string ToolWindowTitle {
-            get {
-                return ResourceManager.GetString("ToolWindowTitle", resourceCulture);
             }
         }
     }

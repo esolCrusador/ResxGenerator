@@ -81,6 +81,9 @@
     <Compile Include="DomainModels\ResExcelModel.cs" />
     <Compile Include="DomainModels\ResourceData.cs" />
     <Compile Include="DomainModels\SolutionResources.cs" />
+    <Compile Include="DomainModels\StringResxNode.cs" />
+    <Compile Include="DTEProjectExtensions.cs" />
+    <Compile Include="ILogger.cs" />
     <Compile Include="IResourceMerge.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DomainModels\ResourceFileInfo.cs" />

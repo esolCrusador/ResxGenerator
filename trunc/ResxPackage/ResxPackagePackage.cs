@@ -3,13 +3,18 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
+using Common.Excel.Contracts;
+using Common.Excel.Implementation;
+using EnvDTE;
+using GloryS.ResourcesPackage;
 using Microsoft.Win32;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
+using ResourcesAutogenerate;
 
-namespace GloryS.ResourcesPackage
+namespace GloryS.ResxPackage
 {
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
@@ -29,10 +34,8 @@ namespace GloryS.ResourcesPackage
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    // This attribute registers a tool window exposed by this package.
-    [ProvideToolWindow(typeof(ResourcesToolWindow))]
-    [Guid(PackageConstants.guidResourcesPackagePkgString)]
-    public sealed class ResourcesPackagePackage : Package
+    [Guid(GuidList.GuidResxPackagePkgString)]
+    public sealed class ResxPackagePackage : Package
     {
         /// <summary>
         /// Default constructor of the package.
@@ -41,29 +44,11 @@ namespace GloryS.ResourcesPackage
         /// not sited yet inside Visual Studio environment. The place to do all the other 
         /// initialization is the Initialize method.
         /// </summary>
-        public ResourcesPackagePackage()
+        public ResxPackagePackage()
         {
             Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
         }
 
-        /// <summary>
-        /// This function is called when the user clicks the menu item that shows the 
-        /// tool window. See the Initialize method to see how the menu item is associated to 
-        /// this function using the OleMenuCommandService service and the MenuCommand class.
-        /// </summary>
-        private void ShowToolWindow(object sender, EventArgs e)
-        {
-            // Get the instance number 0 of this tool window. This window is single instance so this instance
-            // is actually the only one.
-            // The last flag is set to true so that if the tool window does not exists it will be created.
-            ToolWindowPane window = this.FindToolWindow(typeof(ResourcesToolWindow), 0, true);
-            if ((null == window) || (null == window.Frame))
-            {
-                throw new NotSupportedException(Resources.CanNotCreateWindow);
-            }
-            IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
-            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
-        }
 
 
         /////////////////////////////////////////////////////////////////////////////
@@ -79,19 +64,17 @@ namespace GloryS.ResourcesPackage
             Debug.WriteLine (string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
             base.Initialize();
 
-            WpfToolWindowPane.ProvideToolWindowCommand<ResourcesToolWindow>(this, PackageConstants.guidResourcesPackageCmdSet, (int)PkgCmdIDList.ResourcesPackage);
-
             // Add our command handlers for menu (commands must exist in the .vsct file)
-
-            //OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-            //if ( null != mcs )
-            //{
-            //    // Create the command for the tool window
-            //    CommandID toolwndCommandID = new CommandID(PackageConstants.guidResourcesPackageCmdSet, (int)PkgCmdIDList.ResourcesPackage);
-            //    MenuCommand menuToolWin = new MenuCommand(ShowToolWindow, toolwndCommandID);
-            //    mcs.AddCommand( menuToolWin );
-            //}
+            OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
+            if ( null != mcs )
+            {
+                // Create the command for the menu item.
+                CommandID menuCommandID = new CommandID(GuidList.GuidResxPackageCmdSet, (int)PkgCmdIdList.ResxPackage);
+                MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID );
+                mcs.AddCommand( menuItem );
+            }
         }
+        #endregion
 
         private TInterface GetService<TInterface, TService>()
             where TInterface : class
@@ -99,7 +82,45 @@ namespace GloryS.ResourcesPackage
         {
             return this.GetService(typeof(TService)) as TInterface;
         }
-        #endregion
+
+        private ResourcesControl CreateDialog()
+        {
+            IExcelGenerator excelGenerator = new ExcelGenerator();
+            IResourceMerge resourceMerge = new ResourcesSchema(excelGenerator);
+
+            DTE dte = (DTE)ServiceProvider.GlobalProvider.GetService(typeof(DTE));
+            IVsOutputWindow outputWindow = (IVsOutputWindow)ServiceProvider.GlobalProvider.GetService(typeof(SVsOutputWindow));
+
+            return new ResourcesControl(resourceMerge, dte.Solution, new OutputWindowLogger(outputWindow));
+        }
+
+        /// <summary>
+        /// This function is the callback used to execute a command when the a menu item is clicked.
+        /// See the Initialize method to see how the menu item is associated to this function using
+        /// the OleMenuCommandService service and the MenuCommand class.
+        /// </summary>
+        private void MenuItemCallback(object sender, EventArgs e)
+        {
+            var solution = GetService<IVsSolution, SVsSolution>();
+
+            // As the "Edit Links" command is added on the Project menu even when no solution is opened, it must
+            // be validated that a solution exists (in case it doesn't, GetSolutionInfo() returns 3 nulled strings).
+            string s1, s2, s3;
+            ErrorHandler.ThrowOnFailure(solution.GetSolutionInfo(out s1, out s2, out s3));
+            if (s1 != null && s2 != null && s3 != null)
+            {
+                IVsUIShell uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
+                IntPtr parentHwnd = IntPtr.Zero;
+
+                Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(uiShell.GetDialogOwnerHwnd(out parentHwnd));
+
+                var resxControl = CreateDialog();
+
+                var window = new ResxPackageWindow(resxControl);
+
+                window.ShowDialog();
+            }
+        }
 
     }
 }

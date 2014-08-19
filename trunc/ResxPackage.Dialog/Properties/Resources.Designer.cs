@@ -8,8 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace GloryS.ResourcesPackage {
-    using System;
+namespace ResxPackage.Dialog.Properties {
     
     
     /// <summary>
@@ -38,8 +37,8 @@ namespace GloryS.ResourcesPackage {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
-                if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("GloryS.ResourcesPackage.Resources", typeof(Resources).Assembly);
+                if ((resourceMan == null)) {
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ResxPackage.Dialog.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,33 +56,6 @@ namespace GloryS.ResourcesPackage {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Can not create tool window..
-        /// </summary>
-        internal static string CanNotCreateWindow {
-            get {
-                return ResourceManager.GetString("CanNotCreateWindow", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Resx Generator: {0}.
-        /// </summary>
-        internal static string ResourcesPackageErrorWithPrefix {
-            get {
-                return ResourceManager.GetString("ResourcesPackageErrorWithPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Resx Generator.
-        /// </summary>
-        internal static string ToolWindowTitle {
-            get {
-                return ResourceManager.GetString("ToolWindowTitle", resourceCulture);
             }
         }
     }
