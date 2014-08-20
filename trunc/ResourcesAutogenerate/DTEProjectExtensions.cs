@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using EnvDTE;
 
 namespace ResourcesAutogenerate
@@ -11,7 +8,7 @@ namespace ResourcesAutogenerate
     {
         public static IEnumerable<ProjectItem> GetAllItems(this Project project)
         {
-            return GetProjectItems(project.ProjectItems.Cast<ProjectItem>());
+            return project.ProjectItems==null ? Enumerable.Empty<ProjectItem>() : GetProjectItems(project.ProjectItems.Cast<ProjectItem>());
         }
 
         private static IEnumerable<ProjectItem> GetProjectItems(IEnumerable<ProjectItem> projectItems)

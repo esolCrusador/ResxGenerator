@@ -1,9 +1,42 @@
-/**/bin
-/**/obj
-/trunc/ResourcesAutogenerate/bin
-/trunc/ResourcesAutogenerate/obj
-/trunc/ResourcesPackage/bin
-/trunc/ResourcesPackage/obj
+# Common
 
-/trunc/ResourcesPackage.v11.suo
-/.svn
+# Version Control Systems
+*.vssscc
+.svn
+
+# Resharper Folders
+_ReSharper.*
+
+# Debug Folders
+bin
+obj
+debug
+release
+bin-debug
+bin-release
+deploy
+
+# User's Files
+*.user
+*.suo
+*.ncb
+*.opt
+
+# C++
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Log files
+*.plg
