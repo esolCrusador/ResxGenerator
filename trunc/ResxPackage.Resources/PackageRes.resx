@@ -117,7 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="DefaultCulture" xml:space="preserve">
+    <value>Default</value>
+  </data>
   <data name="ResourcesPackageErrorWithPrefix" xml:space="preserve">
     <value>Resx Generator: {0}</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="ResxGenIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\resxgenicon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Resx Sync</value>
   </data>
 </root>

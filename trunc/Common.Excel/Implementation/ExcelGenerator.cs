@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using Common.Excel.Contracts;
 using Common.Excel.Models;
-using DocumentFormat.OpenXml.Drawing;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using MoreLinq;
 
 namespace Common.Excel.Implementation
 {
@@ -42,8 +39,9 @@ namespace Common.Excel.Implementation
                         false, false);
 
                     // Is there are column width defined?
-                    var allRows = mdl.Rows.Select(r => r[colId]).Concat(new[] {mdl.ColumnHeaders[colId]});
-                    var maxString = allRows.MaxBy(c=>c.Length);
+                    var allRows = mdl.Rows.Select(r => r[colId]).Concat(new[] {mdl.ColumnHeaders[colId]}).ToList();
+                    int maxStrLength = allRows.Max(c => c.Length);
+                    var maxString = allRows.First(c => c.Length == maxStrLength);
                     var width = Excel.GetDefaultFontWidth(maxString);
                     if (width>0)
                     {
@@ -94,15 +92,20 @@ namespace Common.Excel.Implementation
 
                 for (int i = 0; i < columnsCount; i++)
                 {
-                    string longestString = groups.SelectMany(g =>
+                    List<string> groupStrings = groups.SelectMany(g =>
                         g.Tables.Select(t =>
                         {
                             string colTitle = t.Header.Columns[i].Title;
-                            string longestRow = t.Rows.Select(r => r.DataList[i].DataString).MaxBy(str => str.Length);
+                            int longestRowLength = t.Rows.Select(r => r.DataList[i].DataString).Max(str => str.Length);
+                            string longestRow = t.Rows.Select(r => r.DataList[i].DataString).First(str => str.Length == longestRowLength);
 
                             return colTitle.Length > longestRow.Length ? colTitle : longestRow;
                         })
-                        ).MaxBy(str => str.Length);
+                        )
+                        .ToList();
+
+                    int longestStringLength = groupStrings.Max(s => s.Length);
+                    string longestString = groupStrings.Find(str => str.Length == longestStringLength);
 
                     columnWidthes.Add((int)Excel.GetDefaultFontWidth(longestString));
                 }

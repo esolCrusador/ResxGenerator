@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ResxPackage.Dialog {
+namespace ResxPackage.Resources {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace ResxPackage.Dialog {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ResxPackage.Dialog.DialogRes", typeof(DialogRes).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ResxPackage.Resources.DialogRes", typeof(DialogRes).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,12 +61,39 @@ namespace ResxPackage.Dialog {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cultures.
+        /// </summary>
+        public static string Cultures {
+            get {
+                return ResourceManager.GetString("Cultures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         public static System.Drawing.Bitmap ExportToExcel {
             get {
                 object obj = ResourceManager.GetObject("ExportToExcel", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Exports resources data to excel file. Please save excel file format!.
+        /// </summary>
+        public static string ExportToExcelTooltip {
+            get {
+                return ResourceManager.GetString("ExportToExcelTooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Imports updated resources data from excel file..
+        /// </summary>
+        public static string ImportFromExcelTooltip {
+            get {
+                return ResourceManager.GetString("ImportFromExcelTooltip", resourceCulture);
             }
         }
         
@@ -87,6 +114,15 @@ namespace ResxPackage.Dialog {
             get {
                 object obj = ResourceManager.GetObject("ResxGen", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This command adds new selected cultures files and strings and removes not selected cultures..
+        /// </summary>
+        public static string SyncResourcesTooltip {
+            get {
+                return ResourceManager.GetString("SyncResourcesTooltip", resourceCulture);
             }
         }
     }

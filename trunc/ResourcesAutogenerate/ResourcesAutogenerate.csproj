@@ -130,6 +130,10 @@
       <Project>{97FF0588-FD74-47C8-BA25-F24A9ADFAA73}</Project>
       <Name>Common.Excel</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ResxPackage.Resources\ResxPackage.Resources.csproj">
+      <Project>{074A6625-3197-447C-A09F-7D97AE3B2FD1}</Project>
+      <Name>ResxPackage.Resources</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

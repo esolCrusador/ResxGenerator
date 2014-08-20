@@ -4,6 +4,11 @@
     <Identity Id="fa894511-2da4-4287-b8ef-f0befadb13ed" Version="1.0" Language="en-US" Publisher="GloryS" />
     <DisplayName>ResxPackage</DisplayName>
     <Description>Project "Resx Generator" is created to add ability to developers automatically synchronise *.resx files of different cultures based on default culture and to export/import project resources to/from *.xlsx files.</Description>
+    <MoreInfo>https://github.com/esolCrusador/ResxGenerator</MoreInfo>
+    <License>http://opensource.org/licenses/MIT</License>
+    <Icon>Resources\ResxGenIcon.png</Icon>
+    <PreviewImage>Resources\ResxGen.png</PreviewImage>
+    <Tags>Resx, Resources, Excel, Import, Export, Sync</Tags>
   </Metadata>
   <Installation InstalledByMsi="false">
     <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="11.0" />

@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using Common.Excel.Models;
 using EnvDTE;
 using ResourcesAutogenerate;
 using ResxPackage.Dialog;
+using ResxPackage.Resources;
 
 namespace GloryS.ResourcesPackage
 {
@@ -42,18 +40,9 @@ namespace GloryS.ResourcesPackage
         {
             base.EndInit();
 
-            this.GenResxIcon.Source = GetImageSource(DialogRes.ResxGen);
-            this.ExportToExcelIcon.Source = GetImageSource(DialogRes.ExportToExcel);
-            this.ImportFromExcelIcon.Source = GetImageSource(DialogRes.ImpotrFromExcel);
-        }
-
-        private ImageSource GetImageSource(Bitmap bitMap)
-        {
-            return System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                bitMap.GetHbitmap(),
-                IntPtr.Zero,
-                Int32Rect.Empty,
-                BitmapSizeOptions.FromWidthAndHeight(bitMap.Width, bitMap.Height));
+            this.GenResxIcon.Source = DialogRes.ResxGen.GetImageSource();
+            this.ExportToExcelIcon.Source = DialogRes.ExportToExcel.GetImageSource();
+            this.ImportFromExcelIcon.Source = DialogRes.ImpotrFromExcel.GetImageSource();
         }
 
         private void InitializeData(Solution solution)
@@ -76,7 +65,7 @@ namespace GloryS.ResourcesPackage
                 .Distinct()
                 .ToList();
 
-            ViewModel = new ResourcesVm(CultureInfo.GetCultures(CultureTypes.NeutralCultures), supportedCultures, projectsList);
+            ViewModel = new ResourcesVm(CultureInfo.GetCultures(CultureTypes.NeutralCultures), supportedCultures, projectsList, Path.GetFileNameWithoutExtension(solution.FullName));
 
             this.DataContext = ViewModel;
         }
@@ -92,8 +81,8 @@ namespace GloryS.ResourcesPackage
                 MessageBox.Show(ex.ToString());
             }
 
-            MessageBox.Show(String.Format("Resources successfully generated\r\n{0}",
-                        String.Join("\r\n", _logMessages)
+            MessageBox.Show(String.Format(LoggerRes.SuccessfullyGeneratedFormat,
+                        String.Join(LoggerRes.Delimiter, _logMessages)
                         ));
             _logMessages.Clear();
         }
@@ -157,8 +146,8 @@ namespace GloryS.ResourcesPackage
                     }
 
 
-                    MessageBox.Show(String.Format("Resources data was successfully imported.\r\n{0}",
-                        String.Join("\r\n", _logMessages)
+                    MessageBox.Show(String.Format(LoggerRes.SuccessfullyImportedFormat,
+                        String.Join(LoggerRes.Delimiter, _logMessages)
                         ));
                     _logMessages.Clear();
                 }

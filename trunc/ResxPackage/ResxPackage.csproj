@@ -121,11 +121,6 @@
   <ItemGroup>
     <Compile Include="Guids.cs" />
     <Compile Include="OutputWindowLogger.cs" />
-    <Compile Include="Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="ResxPackagePackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -133,11 +128,6 @@
     <Compile Include="ResxPackageWindow.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
       <ManifestResourceName>VSPackage</ManifestResourceName>
@@ -159,10 +149,15 @@
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Images.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Resources\Package.ico" />
+    <Content Include="Resources\ResxGenIcon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Resources\ResxGen.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common.Excel\Common.Excel.csproj">
@@ -176,6 +171,10 @@
     <ProjectReference Include="..\ResxPackage.Dialog\ResxPackage.Dialog.csproj">
       <Project>{86AEE5BE-DFE3-4EE8-8BB5-25D942A72020}</Project>
       <Name>ResxPackage.Dialog</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ResxPackage.Resources\ResxPackage.Resources.csproj">
+      <Project>{074A6625-3197-447C-A09F-7D97AE3B2FD1}</Project>
+      <Name>ResxPackage.Resources</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

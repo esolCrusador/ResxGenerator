@@ -1,15 +1,16 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Resources Autogenerate")]
+[assembly: AssemblyTitle("ResxPackage.Resources")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Resources Autogenerate")]
-[assembly: AssemblyCopyright("Copyright ©  2013")]
+[assembly: AssemblyCompany("SSK Soft")]
+[assembly: AssemblyProduct("ResxPackage.Resources")]
+[assembly: AssemblyCopyright("Copyright © SSK Soft 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -19,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("1d4b9644-554a-4ef2-ab53-6ad9ccc9067c")]
+[assembly: Guid("b9e255f9-61dc-4eb1-9650-19010f000723")]
 
 // Version information for an assembly consists of the following four values:
 //

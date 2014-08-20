@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace GloryS.ResxPackage {
+namespace ResxPackage.Resources {
     using System;
     
     
@@ -22,24 +22,24 @@ namespace GloryS.ResxPackage {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class ErrorsRes {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resources() {
+        internal ErrorsRes() {
         }
         
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("GloryS.ResxPackage.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ResxPackage.Resources.ErrorsRes", typeof(ErrorsRes).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -51,7 +51,7 @@ namespace GloryS.ResxPackage {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -61,11 +61,20 @@ namespace GloryS.ResxPackage {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Resx Generator: {0}.
+        ///   Looks up a localized string similar to There are some missed resources..
         /// </summary>
-        internal static string ResourcesPackageErrorWithPrefix {
+        public static string MissingResources {
             get {
-                return ResourceManager.GetString("ResourcesPackageErrorWithPrefix", resourceCulture);
+                return ResourceManager.GetString("MissingResources", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are missing resources in project {0}, file {1} culture {2}..
+        /// </summary>
+        public static string MissingResourcesFormat {
+            get {
+                return ResourceManager.GetString("MissingResourcesFormat", resourceCulture);
             }
         }
     }

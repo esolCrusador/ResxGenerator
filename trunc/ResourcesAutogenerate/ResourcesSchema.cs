@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Resources;
 using Common.Excel.Contracts;
 using Common.Excel.Models;
 using EnvDTE;
 using ResourcesAutogenerate.DomainModels;
+using ResxPackage.Resources;
 
 namespace ResourcesAutogenerate
 {
     public class ResourcesSchema : IResourceMerge
     {
-        private const string InvariantCultureDisplayName = "Default";
+        private static readonly string InvariantCultureDisplayName = PackageRes.DefaultCulture;
         private static readonly int InvariantCultureId = CultureInfo.InvariantCulture.LCID;
 
         private readonly IExcelGenerator _excelGenerator;
@@ -56,7 +56,7 @@ namespace ResourcesAutogenerate
                     {
                         foreach (var projectItem in projectItems2Remove)
                         {
-                            _logger.Log(String.Format("Removed resource file {0}", projectItem.ProjectItem.FileNames[0]));
+                            _logger.Log(String.Format(LoggerRes.RemovedFormat, projectItem.ProjectItem.FileNames[0]));
 
                             projectItem.ProjectItem.Delete();
                             resourceFileGroup.Remove(projectItem.CultureId);
@@ -117,7 +117,7 @@ namespace ResourcesAutogenerate
 
             var header = new HeaderModel<ResExcelModel>
             {
-                Columns = new List<ColumnModel>(1) {new ColumnModel {Title = "Resource Key"}}
+                Columns = new List<ColumnModel>(1) {new ColumnModel {Title = ExcelRes.ResourceKey}}
                     .Concat(culturesOrder.Select(cultureId => cultures[cultureId]).Select(headerName => new ColumnModel {Title = headerName}))
                     .ToList()
             };
@@ -148,8 +148,10 @@ namespace ResourcesAutogenerate
 
                         return tableModel;
                     })
+                        .Where(table => table.Rows.Count != 0)
                         .ToList()
                 })
+                .Where(res => res.Tables.Count != 0)
                 .ToList();
 
             return _excelGenerator.ExportToExcel(groups, title);
@@ -199,7 +201,7 @@ namespace ResourcesAutogenerate
                         }
                         catch (MissingManifestResourceException ex)
                         {
-                            throw new MissingManifestResourceException(String.Format("There are missing resources in project {0}, file {1} culture {2}",
+                            throw new MissingManifestResourceException(String.Format(ErrorsRes.MissingResourcesFormat,
                                 project.ProjRes.ProjectId, resFileTablesJoin.ResData.ResourceName, resFileTablesJoin.ResData.Culture.DisplayName), ex);
                         }
                     }
@@ -216,12 +218,12 @@ namespace ResourcesAutogenerate
                 .ToList();
             if (resData.StringResources.Count != resourcesJoin.Count)
             {
-                throw new MissingManifestResourceException("There are some missed resources");
+                throw new MissingManifestResourceException(ErrorsRes.MissingResources);
             }
 
             if (resourcesJoin.Any(res => res.ExcelValue != res.Value.Value))
             {
-                _logger.Log(String.Format("Updated resource content of {0}", resData.ResourcePath));
+                _logger.Log(String.Format(LoggerRes.UpdatedContentFormat, resData.ResourcePath));
 
                 using (var writer = new ResXResourceWriter(resData.ResourcePath))
                 {
@@ -247,9 +249,9 @@ namespace ResourcesAutogenerate
             {
                 IReadOnlyDictionary<string, ResXDataNode> cultResources = resourceFileInfo.Resources;
 
-                if (!cultResources.Keys.OrderBy(k => k).SequenceEqual(neutralCultureResources.Keys.OrderBy(k => k)))
+                if (neutralCultureResources.Count == 0 || !cultResources.Keys.OrderBy(k => k).SequenceEqual(neutralCultureResources.Keys.OrderBy(k => k)))
                 {
-                    _logger.Log(String.Format("Updated resource content of {0}", resourceFileInfo.ResourcePath));
+                    _logger.Log(String.Format(LoggerRes.UpdatedContentFormat, resourceFileInfo.ResourcePath));
 
                     using (var writer = new ResXResourceWriter(resourceFileInfo.ResourcePath))
                     {
@@ -259,7 +261,7 @@ namespace ResourcesAutogenerate
 
                         foreach (var keyValuePair in resources)
                         {
-                                writer.AddResource(keyValuePair.Key, keyValuePair.Value);
+                            writer.AddResource(keyValuePair.Key, keyValuePair.Value);
                         }
                     }
                 }

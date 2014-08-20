@@ -8,11 +8,12 @@ namespace ResxPackage.Dialog
 {
     public class ResourcesVm
     {
-        public ResourcesVm(IEnumerable<CultureInfo> culturesList, List<int> supportedCultures, IReadOnlyCollection<Project> projects)
+        public ResourcesVm(IEnumerable<CultureInfo> culturesList, List<int> supportedCultures, IReadOnlyCollection<Project> projects, string solutionName)
         {
             ProjectsList = new ObservableCollection<ProjectSelectItem>(projects.Select(proj => new ProjectSelectItem(proj)));
             Projects = projects;
             CulturesList = new ObservableCollection<CultureSelectItem>(culturesList.Select(cul => new CultureSelectItem(cul, supportedCultures.Contains(cul.LCID))).OrderBy(cul => cul.CultureName));
+            SolutionName = solutionName;
         }
 
         #region Observable
@@ -22,6 +23,8 @@ namespace ResxPackage.Dialog
         public ObservableCollection<ProjectSelectItem> ProjectsList { get; set; }
 
         #endregion
+
+        public string SolutionName { get; private set; }
 
         public IReadOnlyCollection<Project> Projects { get; set; }
 

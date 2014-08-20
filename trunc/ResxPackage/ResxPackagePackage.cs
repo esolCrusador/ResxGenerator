@@ -71,6 +71,7 @@ namespace GloryS.ResxPackage
                 // Create the command for the menu item.
                 CommandID menuCommandID = new CommandID(GuidList.GuidResxPackageCmdSet, (int)PkgCmdIdList.ResxPackage);
                 MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID );
+
                 mcs.AddCommand( menuItem );
             }
         }

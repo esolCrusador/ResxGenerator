@@ -57,11 +57,6 @@
     <Compile Include="CombinedLogger.cs" />
     <Compile Include="CultureSelectItem.cs" />
     <Compile Include="DialogLogger.cs" />
-    <Compile Include="DialogRes.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>DialogRes.resx</DependentUpon>
-    </Compile>
     <Compile Include="ProjectSelectItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -80,10 +75,6 @@
       <DependentUpon>ResourcesControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ResourcesVM.cs" />
-    <EmbeddedResource Include="DialogRes.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>DialogRes.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -110,15 +101,10 @@
       <Project>{839ADE17-6037-4C43-B36E-12EF0806D2BF}</Project>
       <Name>ResourcesAutogenerate</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ExportToExcel.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ImpotrFromExcel.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ResxGen.png" />
+    <ProjectReference Include="..\ResxPackage.Resources\ResxPackage.Resources.csproj">
+      <Project>{074a6625-3197-447c-a09f-7d97ae3b2fd1}</Project>
+      <Name>ResxPackage.Resources</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

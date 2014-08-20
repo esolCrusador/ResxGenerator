@@ -21,6 +21,7 @@ using System.Globalization;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using ResourcesAutogenerate;
+using ResxPackage.Resources;
 
 namespace GloryS.ResxPackage
 {
@@ -45,7 +46,7 @@ namespace GloryS.ResxPackage
             }
             else
             {
-                Trace.WriteLine(string.Format(CultureInfo.CurrentUICulture, Resources.ResourcesPackageErrorWithPrefix,
+                Trace.WriteLine(string.Format(CultureInfo.CurrentUICulture, PackageRes.ResourcesPackageErrorWithPrefix,
                                               message));
             }
         }
