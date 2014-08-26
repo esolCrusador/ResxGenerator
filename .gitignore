@@ -40,3 +40,5 @@ deploy
 
 # Log files
 *.plg
+
+trunc
