@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourcesPackage", "ResourcesPackage\ResourcesPackage.csproj", "{58FC8CCA-8733-4B00-B7FB-752C9470C725}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourcesAutogenerate", "ResourcesAutogenerate\ResourcesAutogenerate.csproj", "{839ADE17-6037-4C43-B36E-12EF0806D2BF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Excel", "Common.Excel\Common.Excel.csproj", "{97FF0588-FD74-47C8-BA25-F24A9ADFAA73}"
@@ -19,9 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{58FC8CCA-8733-4B00-B7FB-752C9470C725}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{58FC8CCA-8733-4B00-B7FB-752C9470C725}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{58FC8CCA-8733-4B00-B7FB-752C9470C725}.Release|Any CPU.Build.0 = Release|Any CPU
 		{839ADE17-6037-4C43-B36E-12EF0806D2BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{839ADE17-6037-4C43-B36E-12EF0806D2BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{839ADE17-6037-4C43-B36E-12EF0806D2BF}.Release|Any CPU.ActiveCfg = Release|Any CPU

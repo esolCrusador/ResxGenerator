@@ -5,7 +5,7 @@
 .svn
 
 # Resharper Folders
-_ReSharper.*
+_ReSharper*
 
 # Debug Folders
 bin
