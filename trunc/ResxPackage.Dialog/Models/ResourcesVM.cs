@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using EnvDTE;
 
-namespace ResxPackage.Dialog
+namespace ResxPackage.Dialog.Models
 {
     public class ResourcesVm
     {
@@ -18,6 +18,8 @@ namespace ResxPackage.Dialog
             SelectedCulturesList = new ObservableCollection<CultureSelectItem>(cultures.Where(cul => cul.IsSelected));
 
             SolutionName = solutionName;
+            
+            ExternalSource = new ExternalSourceVm(Models.ExternalSource.Excel);
         }
 
         #region Observable
@@ -29,6 +31,8 @@ namespace ResxPackage.Dialog
         public ObservableCollection<ProjectSelectItem> ProjectsList { get; set; }
 
         #endregion
+
+        public ExternalSourceVm ExternalSource { get; set; }
 
         public string SolutionName { get; private set; }
 

@@ -118,8 +118,7 @@ namespace GloryS.ResxPackage
 
         private ResourcesControl CreateDialog()
         {
-            IExcelGenerator excelGenerator = new ExcelGenerator();
-            IResourceMerge resourceMerge = new ResourcesSchema(excelGenerator);
+            IResourceMerge resourceMerge = new ResourcesSchema();
 
             DTE dte = (DTE)ServiceProvider.GlobalProvider.GetService(typeof(DTE));
             IVsOutputWindow outputWindow = GetService<IVsOutputWindow, SVsOutputWindow>();

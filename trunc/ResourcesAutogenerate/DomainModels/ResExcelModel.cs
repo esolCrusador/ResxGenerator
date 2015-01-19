@@ -14,12 +14,12 @@ namespace ResourcesAutogenerate.DomainModels
             
         }
 
-        public ResExcelModel(string resourceKey, IReadOnlyList<string> resourceValues)
+        public ResExcelModel(string resourceKey, IReadOnlyList<string> resourceValues, string comment)
         {
             ResourceKey = resourceKey;
             ResourceValues = resourceValues;
 
-            var dataList = new List<ResCellModel>(ResourceValues.Count + 1);
+            var dataList = new List<ResCellModel>(ResourceValues.Count + 2);
 
             dataList.Add(new ResCellModel(ResourceKey));
 
@@ -29,6 +29,7 @@ namespace ResourcesAutogenerate.DomainModels
                     {
                         Hilight = idx != 0 && resourceValues.Count(rv => rv == v) > 1
                     }));
+            dataList.Add(new ResCellModel(comment));
 
             DataList = dataList;
         }

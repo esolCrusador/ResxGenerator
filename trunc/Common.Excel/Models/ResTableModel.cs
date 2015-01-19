@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Common.Excel.Models
 {
@@ -10,7 +6,7 @@ namespace Common.Excel.Models
     {
         public string TableTitle { get; set; }
 
-        public HeaderModel<TModel> Header { get; set; }
+        public HeaderModel Header { get; set; }
 
         public IReadOnlyList<RowModel<TModel>> Rows { get; set; }
     }

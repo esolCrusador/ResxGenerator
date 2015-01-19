@@ -21,7 +21,10 @@
             <Setter Property="Padding" Value="10"/>
             <Setter Property="Margin" Value="15"/>
         </Style>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Control.Resources>
+
+    <Grid>
     <Grid Height="Auto" Width="Auto" Margin="10,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -67,22 +70,49 @@
             <ItemsControl Name="CulturesListBox" ItemsSource="{Binding CulturesList}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <CheckBox Name="CheckBoxZone" Visibility="{Binding Visibility}" IsEnabled="{Binding IsEnabled}" Content="{Binding CultureName}" Checked="CheckBoxZone_CheckChanged" IsChecked="{Binding IsSelected}" Tag="{Binding CultureId}" Margin="0,5,0,0"/>
+                        <CheckBox Name="CheckBoxZone" Visibility="{Binding Path=IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}" IsEnabled="{Binding IsEnabled}" Content="{Binding CultureName}" Checked="CheckBoxZone_CheckChanged" IsChecked="{Binding IsSelected}" Tag="{Binding CultureId}" Margin="0,5,0,0"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
         <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="6">
+            <StackPanel Orientation="Horizontal">
+                <RadioButton GroupName="ExternalSource" IsChecked="{Binding ExternalSource.IsExcelSelected}" Margin="10" Height="32" VerticalAlignment="Center">
+                    <Image Name="ExcelIcon"/>
+                </RadioButton>
+                <RadioButton GroupName="ExternalSource" IsChecked="{Binding ExternalSource.IsGoogleDriveSelected}" VerticalAlignment="Center" Margin="10" Height="32">
+                    <Image Name="GoogleDriveIcon"/>
+                </RadioButton>
+            </StackPanel>
             <Button Name="GenerateButton" HorizontalAlignment="Left" ToolTip="{x:Static resources:DialogRes.SyncResourcesTooltip}" Click="GenerateButton_Click" >
                 <Image Name="GenResxIcon" />
             </Button>
-            <Button Name="ExportToExcel" ToolTip="{x:Static resources:DialogRes.ExportToExcelTooltip}" Click="ExportToExcel_Click">
-                <Image Name="ExportToExcelIcon" />
-            </Button>
-            <Button Name="ImportFromExcel" ToolTip="{x:Static resources:DialogRes.ImportFromExcelTooltip}" Click="ImportFromExcel_Click">
-                <Image Name="ImportFromExcelIcon" />
-            </Button>
+            <StackPanel Visibility="{Binding Path=ExternalSource.IsExcelSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Button Name="ExportToExcel" ToolTip="{x:Static resources:DialogRes.ExportToExcelTooltip}" Click="ExportToExcel_Click">
+                    <Image Name="ExportToExcelIcon" />
+                </Button>
+                <Button Name="ImportFromExcel" ToolTip="{x:Static resources:DialogRes.ImportFromExcelTooltip}" Click="ImportFromExcel_Click">
+                    <Image Name="ImportFromExcelIcon" />
+                </Button>
+            </StackPanel>
+            <StackPanel Visibility="{Binding Path=ExternalSource.IsGoogleDriveSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Button Name="ExportToGDrive" ToolTip="{x:Static resources:DialogRes.ExportToGDriveTooltip}" Click="ExportToGDrive_Click">
+                    <Image Name="ExportToGDriveIcon" />
+                </Button>
+                <Button Name="ImportFromGDrive" ToolTip="{x:Static resources:DialogRes.ImportFromGDriveTooltip}">
+                    <Image Name="ImportFromGDriveIcon" />
+                </Button>
+            </StackPanel>
         </StackPanel>
 
+    </Grid>
+
+        <Grid Name="Overlay" Cursor="Wait" Visibility="Hidden">
+            <Grid HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Background="Black"
+              Opacity="0.6" />
+            <Image Name="OverlayImage" HorizontalAlignment="Center" VerticalAlignment="Center" Height="32"></Image>
+        </Grid>
     </Grid>
 </UserControl>

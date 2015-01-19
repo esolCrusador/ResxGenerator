@@ -62,11 +62,6 @@ namespace ResxPackage.Dialog
             }
         }
 
-        public Visibility Visibility
-        {
-            get { return IsVisible ? Visibility.Visible : Visibility.Collapsed; }
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

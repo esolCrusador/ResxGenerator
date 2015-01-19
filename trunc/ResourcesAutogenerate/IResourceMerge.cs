@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Common.Excel.Contracts;
 using Common.Excel.Models;
 using EnvDTE;
 
@@ -8,9 +10,9 @@ namespace ResourcesAutogenerate
     {
         void SetLogger(ILogger logger);
 
-        void UpdateResources(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, bool removeFiles = true);
+        Task UpdateResourcesAsync(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, bool removeFiles = true);
 
-        FileInfoContainer ExportToExcelFile(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, string title);
-        void ImportFromExcel(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, FileInfoContainer file);
+        Task ExportToDocumentAsync(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects);
+        Task ImportFromDocumentAsync(IDocumentGenerator document, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects);
     }
 }

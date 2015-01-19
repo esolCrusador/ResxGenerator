@@ -114,6 +114,18 @@
   <ItemGroup>
     <None Include="Resources\resxgenicon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ExportToGdrive.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImpotrFromGdrive.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Excel.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Gdrive.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

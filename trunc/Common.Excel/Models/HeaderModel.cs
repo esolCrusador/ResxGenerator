@@ -2,7 +2,7 @@
 
 namespace Common.Excel.Models
 {
-    public class HeaderModel<TModel>
+    public class HeaderModel
     {
         public IReadOnlyList<ColumnModel>  Columns { get; set; }
     }

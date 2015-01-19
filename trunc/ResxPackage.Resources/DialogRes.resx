@@ -120,24 +120,42 @@
   <data name="Cultures" xml:space="preserve">
     <value>Cultures</value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Excel" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\Excel.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Exception" xml:space="preserve">
     <value>Exception</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="ExportToExcel" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\ExportToExcel.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ExportToExcelTooltip" xml:space="preserve">
     <value>Exports resources data to excel file. Please save excel file format!</value>
   </data>
+  <data name="ExportToGdrive" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\ExportToGdrive.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ExportToGDriveTooltip" xml:space="preserve">
+    <value>Exports resources data to google drive document.</value>
+  </data>
   <data name="Filter" xml:space="preserve">
     <value>Filter</value>
+  </data>
+  <data name="Gdrive" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\Gdrive.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ImportFromExcelTooltip" xml:space="preserve">
     <value>Imports updated resources data from excel file.</value>
   </data>
+  <data name="ImportFromGDriveTooltip" xml:space="preserve">
+    <value>Imports updated resources data from google drive document.</value>
+  </data>
   <data name="ImpotrFromExcel" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\ImpotrFromExcel.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ImpotrFromGdrive" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\ImpotrFromGdrive.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ResxGen" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\ResxGen.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -147,5 +165,39 @@
   </data>
   <data name="SyncResourcesTooltip" xml:space="preserve">
     <value>This command adds new selected cultures files and strings and removes not selected cultures.</value>
+  </data>
+  <data name="CreateNewTable" xml:space="preserve">
+    <value>Create New Table</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>Ok</value>
+  </data>
+  <data name="DocumentNotSelected" xml:space="preserve">
+    <value>No document selected</value>
+  </data>
+  <data name="PleaseSelectDocument" xml:space="preserve">
+    <value>Please select destanation document.</value>
+  </data>
+  <data name="SelectDocument" xml:space="preserve">
+    <value>Select Document</value>
+  </data>
+  <data name="DelayText" xml:space="preserve">
+    <value>Trying to connect to google service. 
+                   
+This can take up to 3-10 seconds. 
+                   
+Please wait</value>
+  </data>
+  <data name="NavgationFailed" xml:space="preserve">
+    <value>Browser navigation failed</value>
+  </data>
+  <data name="PermissionsRequest" xml:space="preserve">
+    <value>Google Sheets access permissions</value>
   </data>
 </root>

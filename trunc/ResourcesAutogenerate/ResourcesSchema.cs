@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Resources;
+using System.Threading.Tasks;
 using Common.Excel.Contracts;
 using Common.Excel.Models;
 using EnvDTE;
@@ -17,18 +18,135 @@ namespace ResourcesAutogenerate
         private static readonly string InvariantCultureDisplayName = PackageRes.DefaultCulture;
         private static readonly int InvariantCultureId = CultureInfo.InvariantCulture.LCID;
 
-        private readonly IExcelGenerator _excelGenerator;
-
         private ILogger _logger;
-
-        public ResourcesSchema(IExcelGenerator excelGenerator)
-        {
-            _excelGenerator = excelGenerator;
-        }
 
         public void SetLogger(ILogger logger)
         {
             _logger = logger;
+        }
+
+        public Task UpdateResourcesAsync(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, bool removeFiles = true)
+        {
+            return Task.Run(() => UpdateResources(selectedCultures, selectedProjects, removeFiles));
+        }
+
+        public async Task ExportToDocumentAsync(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects)
+        {
+            SolutionResources solutionResources = GetSolutionResources(selectedCultures, selectedProjects);
+
+            var cultures = selectedCultures.Select(CultureInfo.GetCultureInfo)
+                .ToDictionary(
+                    cult => cult.LCID,
+                    cult => cult.LCID == InvariantCultureId ? InvariantCultureDisplayName : cult.TwoLetterISOLanguageName.ToUpper()
+                );
+
+            var culturesOrder = new List<int>(cultures.Count)
+            {
+                InvariantCultureId
+            };
+            culturesOrder.AddRange(cultures.Where(cult => cult.Key != InvariantCultureId).OrderBy(cult => cult.Value).Select(cult => cult.Key));
+
+            var header = new HeaderModel
+            {
+                Columns = new List<ColumnModel>(1) { new ColumnModel { Title = ExcelRes.ResourceKey } }
+                    .Concat(culturesOrder.Select(cultureId => cultures[cultureId]).Select(headerName => new ColumnModel { Title = headerName }))
+                    .Concat(new List<ColumnModel>(1) { new ColumnModel { Title = ExcelRes.Comment } })
+                    .ToList()
+            };
+
+            IReadOnlyList<ResGroupModel<ResExcelModel>> groups = solutionResources
+                .ProjectResources.Select(proj => new ResGroupModel<ResExcelModel>
+                {
+                    GroupTitle = proj.ProjectName,
+                    Tables = proj.Resources.Select(res =>
+                    {
+                        var neutralResources = res.Value[InvariantCultureId].StringResources;
+                        List<string> keysOrder = neutralResources.Keys.OrderBy(key => key).ToList();
+
+                        List<RowModel<ResExcelModel>> rows = keysOrder.Select(
+                            resKey => new RowModel<ResExcelModel>
+                            {
+                                Model = new ResExcelModel(resKey,
+                                    culturesOrder.Select(cultureId => res.Value[cultureId]).Select(resData => resData.StringResources[resKey].Value).ToList(),
+                                    res.Value[InvariantCultureId].StringResources[resKey].Comment)
+                            })
+                            .Where(r => r.Model.ResourceValues.Count != 0)
+                            .ToList();
+
+                        var tableModel = new ResTableModel<ResExcelModel>
+                        {
+                            TableTitle = res.Key,
+                            Header = header,
+                            Rows = rows
+                        };
+
+                        return tableModel;
+                    })
+                        .Where(table => table.Rows.Count != 0)
+                        .ToList()
+                })
+                .Where(res => res.Tables.Count != 0)
+                .ToList();
+
+            await documentGenerator.ExportToDocumentAsync(path, groups);
+        }
+
+        public async Task ImportFromDocumentAsync(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects)
+        {
+            IReadOnlyList<ResGroupModel<ResExcelModel>> data = await documentGenerator.ImportFromExcelAsync<ResExcelModel>(path);
+
+            SolutionResources resources = GetSolutionResources(selectedCultures, selectedProjects);
+
+            var projectsJoin = resources.ProjectResources
+                .Join(data, projRes => projRes.ProjectName, excelProjRes => excelProjRes.GroupTitle, (projRes, excelProjRes) => new { ProjRes = projRes, ExcelProjRes = excelProjRes });
+
+            foreach (var project in projectsJoin)
+            {
+                var resourceTablesJoin = project.ProjRes.Resources
+                    .Join(project.ExcelProjRes.Tables, resTable => resTable.Key, excelResTable => excelResTable.TableTitle, (resTable, excelResTable) => new { ResTable = resTable, ExcelResTable = excelResTable });
+
+                foreach (var resource in resourceTablesJoin)
+                {
+                    int columnsCount = resource.ExcelResTable.Header.Columns.Count;
+                    int culturesCount = columnsCount - 2;
+
+                    List<int> cultureIds = resource.ExcelResTable.Header.Columns
+                        .Skip(1)
+                        .Select(col => col.Title == InvariantCultureDisplayName ? InvariantCultureId : CultureInfo.GetCultureInfo(col.Title).LCID)
+                        .Take(culturesCount)
+                        .ToList();
+                    List<string> resourceKeys = resource.ExcelResTable.Rows.Select(row => row.DataList[0].DataString).ToList();
+                    List<string> comments = resource.ExcelResTable.Rows.Select(row => row.DataList[columnsCount - 1].DataString).ToList();
+
+                    Dictionary<int, IReadOnlyCollection<ResourceEntryData>> excelResources = cultureIds
+                        .Select((cultureId, index) => new KeyValuePair<int, IReadOnlyCollection<ResourceEntryData>>
+                            (
+                            cultureId,
+                            resourceKeys.Zip(
+                                resource.ExcelResTable.Rows.Select(row => row.DataList[index + 1].DataString),
+                                (key, value) => new { Key = key, Value = value })
+                                .Zip(comments, (kvp, comment) => new ResourceEntryData(kvp.Key, kvp.Value, comment))
+                                .ToList()
+                            ))
+                        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+                    var resourceFileTablesJoin = resource.ResTable.Value
+                        .Join(excelResources, resData => resData.Key, excelResData => excelResData.Key, (resData, excelResData) => new { ResData = resData.Value, ExcelResData = excelResData.Value });
+
+                    foreach (var resFileTablesJoin in resourceFileTablesJoin)
+                    {
+                        try
+                        {
+                            UpdateResourceFile(resFileTablesJoin.ResData, resFileTablesJoin.ExcelResData);
+                        }
+                        catch (MissingManifestResourceException ex)
+                        {
+                            throw new MissingManifestResourceException(String.Format(ErrorsRes.MissingResourcesFormat,
+                                project.ProjRes.ProjectId, resFileTablesJoin.ResData.ResourceName, resFileTablesJoin.ResData.Culture.DisplayName), ex);
+                        }
+                    }
+                }
+            }
         }
 
         public void UpdateResources(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, bool removeFiles = true)
@@ -97,131 +215,19 @@ namespace ResourcesAutogenerate
             }
         }
 
-        public FileInfoContainer ExportToExcelFile(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, string title)
-        {
-            SolutionResources solutionResources = GetSolutionResources(selectedCultures, selectedProjects);
-            
-
-
-            var cultures = selectedCultures.Select(CultureInfo.GetCultureInfo)
-                .ToDictionary(
-                    cult => cult.LCID,
-                    cult => cult.LCID == InvariantCultureId ? InvariantCultureDisplayName : cult.TwoLetterISOLanguageName.ToUpper()
-                );
-
-            var culturesOrder = new List<int>(cultures.Count)
-            {
-                InvariantCultureId
-            };
-            culturesOrder.AddRange(cultures.Where(cult => cult.Key != InvariantCultureId).OrderBy(cult => cult.Value).Select(cult => cult.Key));
-
-            var header = new HeaderModel<ResExcelModel>
-            {
-                Columns = new List<ColumnModel>(1) {new ColumnModel {Title = ExcelRes.ResourceKey}}
-                    .Concat(culturesOrder.Select(cultureId => cultures[cultureId]).Select(headerName => new ColumnModel {Title = headerName}))
-                    .ToList()
-            };
-
-            IReadOnlyList<ResGroupModel<ResExcelModel>> groups = solutionResources
-                .ProjectResources.Select(proj => new ResGroupModel<ResExcelModel>
-                {
-                    GroupTitle = proj.ProjectName,
-                    Tables = proj.Resources.Select(res =>
-                    {
-                        var neutralResources = res.Value[InvariantCultureId].StringResources;
-                        List<string> keysOrder = neutralResources.Keys.OrderBy(key => key).ToList();
-
-                        List<RowModel<ResExcelModel>> rows = keysOrder.Select(
-                            resKey => new RowModel<ResExcelModel>
-                            {
-                                Model = new ResExcelModel(resKey, culturesOrder.Select(cultureId => res.Value[cultureId]).Select(resData => resData.StringResources[resKey].Value).ToList())
-                            })
-                            .Where(r => r.Model.ResourceValues.Count != 0)
-                            .ToList();
-
-                        var tableModel = new ResTableModel<ResExcelModel>
-                        {
-                            TableTitle = res.Key,
-                            Header = header,
-                            Rows = rows
-                        };
-
-                        return tableModel;
-                    })
-                        .Where(table => table.Rows.Count != 0)
-                        .ToList()
-                })
-                .Where(res => res.Tables.Count != 0)
-                .ToList();
-
-            return _excelGenerator.ExportToExcel(groups, title);
-        }
-
-        public void ImportFromExcel(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, FileInfoContainer file)
-        {
-            IReadOnlyList<ResGroupModel<ResExcelModel>> data = _excelGenerator.ImportFromExcel<ResExcelModel>(file);
-            SolutionResources resources = GetSolutionResources(selectedCultures, selectedProjects);
-
-            var projectsJoin = resources.ProjectResources
-                .Join(data, projRes => projRes.ProjectName, excelProjRes => excelProjRes.GroupTitle, (projRes, excelProjRes) => new {ProjRes = projRes, ExcelProjRes = excelProjRes});
-
-            foreach (var project in projectsJoin)
-            {
-                var resourceTablesJoin = project.ProjRes.Resources
-                    .Join(project.ExcelProjRes.Tables, resTable => resTable.Key, excelResTable => excelResTable.TableTitle, (resTable, excelResTable) => new {ResTable = resTable, ExcelResTable = excelResTable});
-
-                foreach (var resource in resourceTablesJoin)
-                {
-                    List<int> cultureIds = resource.ExcelResTable.Header.Columns
-                        .Skip(1)
-                        .Select(col => col.Title == InvariantCultureDisplayName ? InvariantCultureId : CultureInfo.GetCultureInfo(col.Title).LCID)
-                        .ToList();
-                    List<string> resourceKeys = resource.ExcelResTable.Rows.Select(row => row.DataList[0].DataString).ToList();
-
-                    Dictionary<int, Dictionary<string, string>> excelResources = cultureIds
-                        .Select((cultureId, index) => new KeyValuePair<int, Dictionary<string, string>>
-                            (
-                            cultureId,
-                            resourceKeys.Zip(
-                                resource.ExcelResTable.Rows.Select(row => row.DataList[index + 1].DataString),
-                                (key, value) => new KeyValuePair<string, string>(key, value)
-                                )
-                                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
-                            ))
-                        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-                    var resourceFileTablesJoin = resource.ResTable.Value
-                        .Join(excelResources, resData => resData.Key, excelResData => excelResData.Key, (resData, excelResData) => new {ResData = resData.Value, ExcelResData = excelResData.Value});
-
-                    foreach (var resFileTablesJoin in resourceFileTablesJoin)
-                    {
-                        try
-                        {
-                            UpdateResourceFile(resFileTablesJoin.ResData, resFileTablesJoin.ExcelResData);
-                        }
-                        catch (MissingManifestResourceException ex)
-                        {
-                            throw new MissingManifestResourceException(String.Format(ErrorsRes.MissingResourcesFormat,
-                                project.ProjRes.ProjectId, resFileTablesJoin.ResData.ResourceName, resFileTablesJoin.ResData.Culture.DisplayName), ex);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void UpdateResourceFile(ResourceData resData, IReadOnlyDictionary<string, string> excelResData)
+        private void UpdateResourceFile(ResourceData resData, IEnumerable<ResourceEntryData> excelResData)
         {
             //We need to compare only string resources.
             var resourcesJoin = resData.StringResources
                 .Join(excelResData, res => res.Key, resExcel => resExcel.Key,
-                    (res, resExcel) => new { Key = res.Key, Value = res.Value, ExcelValue = resExcel.Value })
+                    (res, excelEntry) => new { Key = res.Key, Value = res.Value, ExcelEntryData = excelEntry })
                 .ToList();
             if (resData.StringResources.Count != resourcesJoin.Count)
             {
                 throw new MissingManifestResourceException(ErrorsRes.MissingResources);
             }
 
-            if (resourcesJoin.Any(res => res.ExcelValue != res.Value.Value))
+            if (resourcesJoin.Any(res => res.ExcelEntryData.Value != res.Value.Value||res.ExcelEntryData.Comment!=res.Value.Comment))
             {
                 _logger.Log(String.Format(LoggerRes.UpdatedContentFormat, resData.ResourcePath));
 
@@ -229,13 +235,18 @@ namespace ResourcesAutogenerate
                 {
                     //Adding not string resource types.
                     var resourcesData = resData.NotStringResources
-                        .Concat(resourcesJoin.Select(kvp =>
-                            new KeyValuePair<string, ResXDataNode>(kvp.Key, new ResXDataNode(kvp.Key, kvp.ExcelValue) {Comment = kvp.Value.Comment}))
+                        .Concat(resourcesJoin.Select(resourceWithEntry =>
+                            new KeyValuePair<string, ResXDataNode>(resourceWithEntry.Key,
+                                new ResXDataNode(resourceWithEntry.Key, resourceWithEntry.ExcelEntryData.Value)
+                                {
+                                    Comment = resourceWithEntry.ExcelEntryData.Comment
+                                })
+                            )
                         );
 
                     foreach (var keyValuePair in resourcesData)
                     {
-                        writer.AddResource(keyValuePair.Key, keyValuePair.Value);
+                        writer.AddResource(keyValuePair.Value);
                     }
                 }
             }
@@ -264,7 +275,7 @@ namespace ResourcesAutogenerate
 
                         foreach (var keyValuePair in resources)
                         {
-                            writer.AddResource(keyValuePair.Key, keyValuePair.Value);
+                            writer.AddResource(keyValuePair.Value);
                         }
                     }
                 }

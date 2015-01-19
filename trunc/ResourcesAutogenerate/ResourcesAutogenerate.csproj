@@ -80,6 +80,7 @@
     <Compile Include="DomainModels\ResCellModel.cs" />
     <Compile Include="DomainModels\ResExcelModel.cs" />
     <Compile Include="DomainModels\ResourceData.cs" />
+    <Compile Include="DomainModels\ResourceEntryData.cs" />
     <Compile Include="DomainModels\SolutionResources.cs" />
     <Compile Include="DomainModels\StringResxNode.cs" />
     <Compile Include="DTEProjectExtensions.cs" />

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Common.Excel.Contracts;
 using Common.Excel.Models;
 using DocumentFormat.OpenXml.Packaging;
@@ -9,66 +10,21 @@ using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace Common.Excel.Implementation
 {
-    public class ExcelGenerator : IExcelGenerator
+    public class ExcelGenerator : IDocumentGenerator
     {
         //For Excel2007 and above .xlsx files
-        const string ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
-        string GetFileName(string title)
+        public Task ExportToDocumentAsync<TModel>(string path, IReadOnlyList<ResGroupModel<TModel>> groups) where TModel : IRowModel
         {
-            return string.Format("{0}.xlsx", title);
+            return Task.Run(()=> ExportToDocument(path, groups));
         }
 
-        public FileInfoContainer ExportToExcel(ExcelExportModel mdl)
+        public Task<IReadOnlyList<ResGroupModel<TModel>>> ImportFromExcelAsync<TModel>(string path) where TModel : IRowModel, new()
         {
-            using (var stream = new MemoryStream())
-            {
-                /* Create the worksheet. */
-                SpreadsheetDocument spreadsheet = Excel.CreateWorkbook(stream);
-                Excel.AddBasicStyles(spreadsheet);
-                Excel.AddAdditionalStyles(spreadsheet);
-                Excel.AddWorksheet(spreadsheet, mdl.Title);
-                Worksheet worksheet = spreadsheet.WorkbookPart.WorksheetParts.First().Worksheet;
-
-                /* Add the column titles to the worksheet. */
-                for (int colId = 0; colId < mdl.ColumnHeaders.Count; colId++)
-                {
-                    // If the column has a title, use it.  Otherwise, use the field name.
-                    Excel.SetColumnHeadingValue(spreadsheet, worksheet, Convert.ToUInt32(colId + 1), 1,
-                        mdl.ColumnHeaders[colId],
-                        false, false);
-
-                    // Is there are column width defined?
-                    var allRows = mdl.Rows.Select(r => r[colId]).Concat(new[] {mdl.ColumnHeaders[colId]}).ToList();
-                    int maxStrLength = allRows.Max(c => c.Length);
-                    var maxString = allRows.First(c => c.Length == maxStrLength);
-                    var width = Excel.GetDefaultFontWidth(maxString);
-                    if (width>0)
-                    {
-                        Excel.SetColumnWidth(worksheet, colId + 1, (int)width);
-                    }
-                }
-                
-                // For each row of data...
-                for (int rowId = 0; rowId < mdl.Rows.Count; rowId++)
-                {
-                    for (int colId = 0; colId < mdl.ColumnHeaders.Count; colId++)
-                    {
-                        // Set the field value in the spreadsheet for the current row and column.
-                        Excel.SetCellValue(spreadsheet, worksheet, Convert.ToUInt32(colId + 1), Convert.ToUInt32(rowId + 2),
-                            mdl.Rows[rowId][colId],
-                            false, false);
-                    }
-                }
-                
-                //Save the worksheet
-                worksheet.Save();
-                spreadsheet.Close();
-                return new FileInfoContainer(stream.ToArray(), GetFileName(mdl.Title));
-            }
+            return Task.Run(() => ImportFromExcel<TModel>(path));
         }
 
-        public FileInfoContainer ExportToExcel<TModel>(IReadOnlyList<ResGroupModel<TModel>> groups, string title) where TModel : IRowModel
+        public void ExportToDocument<TModel>(string path, IReadOnlyList<ResGroupModel<TModel>> groups) where TModel : IRowModel
         {
             if (groups.Count == 0)
             {
@@ -152,13 +108,22 @@ namespace Common.Excel.Implementation
                 }
 
                 spreadsheet.Close();
-                return new FileInfoContainer(stream.ToArray(), GetFileName(title));
+
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+
+                using (FileStream fileStream = File.Create(path))
+                {
+                    fileStream.Write(stream.ToArray(), 0, (int)stream.Length);
+                }
             }
         }
 
-        public IReadOnlyList<ResGroupModel<TModel>> ImportFromExcel<TModel>(FileInfoContainer file) where TModel : IRowModel, new()
+        public IReadOnlyList<ResGroupModel<TModel>> ImportFromExcel<TModel>(string path) where TModel : IRowModel, new()
         {
-            using (MemoryStream stream = new MemoryStream(file.Bytes))
+            using (FileStream stream =  File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 SpreadsheetDocument spreadsheet = SpreadsheetDocument.Open(stream, false);
                 WorkbookPart workbookPart = spreadsheet.WorkbookPart;
@@ -203,7 +168,7 @@ namespace Common.Excel.Implementation
                         dataEnumerator.MoveNext();
                         moveNextFunc();
 
-                        newTable.Header = new HeaderModel<TModel>
+                        newTable.Header = new HeaderModel
                         {
                             Columns = rowCells.Select(cell => new ColumnModel {Title = cell}).ToList()
                         };
@@ -248,110 +213,5 @@ namespace Common.Excel.Implementation
 
             return val => sharedStringItems[int.Parse(val)].InnerText;
         }
-
-        #region just other possible variations
-        //public static Stream ExportToExcel<T>(List<T> data, List<ColumnModel> columnsMetadatas, string title)
-        //{
-        //    var stream = new MemoryStream();
-        //    // Create the worksheet.
-        //    SpreadsheetDocument spreadsheet = Excel.CreateWorkbook(stream);
-        //    Excel.AddBasicStyles(spreadsheet);
-        //    Excel.AddAdditionalStyles(spreadsheet);
-        //    Excel.AddWorksheet(spreadsheet, title);
-        //    Worksheet worksheet = spreadsheet.WorkbookPart.WorksheetParts.First().Worksheet;
-
-        //    //Add the column titles to the worksheet.
-        //    for (var i = 0; i < columnsMetadatas.Count; i++)
-        //    {
-        //        // If the column has a title, use it.  Otherwise, use the field name.
-        //        Excel.SetColumnHeadingValue(spreadsheet, worksheet, Convert.ToUInt32(i + 1),
-        //            (string.IsNullOrWhiteSpace(columnsMetadatas[i].Title))
-        //                ? columnsMetadatas[i].Field
-        //                : columnsMetadatas[i].Title,
-        //            false, false);
-
-        //        // Is there are column width defined?
-        //        //Excel.SetColumnWidth(worksheet, i + 1, columnsMetadatas[i].width != null
-        //        //    ? int.Parse(LeadingInteger.Match(columnsMetadatas[i].width.ToString()).Value) / 4
-        //        //    : 25);
-        //    }
-
-        //    var vp = new DataValueProvider(typeof(T));
-
-        //    //Add the data to the worksheet.
-        //    for (int rowId = 0; rowId < data.Count; rowId++)
-        //    {
-        //        //for each column...
-        //        for (var columnId = 0; columnId < columnsMetadatas.Count; columnId++)
-        //        {
-        //            var fieldName = columnsMetadatas[columnId].Field;
-        //            // Set the field value in the spreadsheet for the current row and column.
-        //            Excel.SetCellValue(spreadsheet, worksheet, Convert.ToUInt32(columnId + 1),
-        //                Convert.ToUInt32(rowId + 2),
-        //                vp.GetValue(data[rowId], fieldName),
-        //                false, false);
-        //        }
-        //    }
-
-        //    worksheet.Save();
-        //    spreadsheet.Close();
-        //    return stream;
-        //}
-
-        //// http://stackoverflow.com/questions/975455/is-there-an-equivalent-to-javascript-parseint-in-c
-        //private static readonly Regex LeadingInteger = new Regex(@"^(-?\d+)");
-
-        //public static FileInfoContainer ExportToExcel(dynamic data, dynamic metadata, string title)
-        //{
-        //    using (var stream = new MemoryStream())
-        //    {
-        //        /* Create the worksheet. */
-
-        //        SpreadsheetDocument spreadsheet = Excel.CreateWorkbook(stream);
-        //        Excel.AddBasicStyles(spreadsheet);
-        //        Excel.AddAdditionalStyles(spreadsheet);
-        //        Excel.AddWorksheet(spreadsheet, title);
-        //        Worksheet worksheet = spreadsheet.WorkbookPart.WorksheetParts.First().Worksheet;
-
-        //        /* Add the column titles to the worksheet. */
-        //        for (int mdx = 0; mdx < metadata.Count; mdx++)
-        //        {
-        //            // If the column has a title, use it.  Otherwise, use the field name.
-        //            Excel.SetColumnHeadingValue(spreadsheet, worksheet, Convert.ToUInt32(mdx + 1),
-        //                (metadata[mdx].title == null || metadata[mdx].title == "&nbsp;")
-        //                    ? metadata[mdx].field.ToString()
-        //                    : metadata[mdx].title.ToString(),
-        //                false, false);
-
-        //            // Is there are column width defined?
-        //            Excel.SetColumnWidth(worksheet, mdx + 1, metadata[mdx].width != null
-        //                ? int.Parse(LeadingInteger.Match(metadata[mdx].width.ToString()).Value) / 4
-        //                : 25);
-        //        }
-
-
-        //        // For each row of data...
-        //        for (int idx = 0; idx < data.Count; idx++)
-        //        {
-        //            // For each column...
-        //            for (int mdx = 0; mdx < metadata.Count; mdx++)
-        //            {
-        //                // Set the field value in the spreadsheet for the current row and column.
-        //                Excel.SetCellValue(spreadsheet, worksheet, Convert.ToUInt32(mdx + 1), Convert.ToUInt32(idx + 2),
-        //                    data[idx][metadata[mdx].field.ToString()].ToString(),
-        //                    false, false);
-        //            }
-        //        }
-
-
-        //        /* Save the worksheet and store it in Session using the spreadsheet title. */
-
-        //        worksheet.Save();
-        //        spreadsheet.Close();
-        //        return new FileInfoContainer(stream.ToArray(), ExcelGenerator.GetFileName(title), ContentType);
-        //    }
-        //}
-
-        #endregion
     }
 }

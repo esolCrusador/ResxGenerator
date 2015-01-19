@@ -1,19 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using Common.Excel.Models;
+using System.Windows.Forms;
+using Common.Excel.Implementation;
 using EnvDTE;
+using Google.GData.Client;
+using Google.GData.Spreadsheets;
 using ResourcesAutogenerate;
 using ResxPackage.Dialog;
+using ResxPackage.Dialog.Models;
 using ResxPackage.Resources;
+using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+using Process = System.Diagnostics.Process;
+using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
+using TextBox = System.Windows.Controls.TextBox;
+using UserControl = System.Windows.Controls.UserControl;
 
 namespace GloryS.ResourcesPackage
 {
@@ -26,10 +33,17 @@ namespace GloryS.ResourcesPackage
         private readonly Action<string, string, DialogIcon> _showDialogAction;
         private readonly List<string> _logMessages;
 
+        private ExcelGenerator _excelGenerator;
+
+        private OAuth2Parameters _googleOAuth2Parameters;
+        private GoogleDocGenerator _googleDocGenerator;
+        private SelectGoogleDocumentDialog _selectDocumentDialog;
+
         public ResourcesControl(IResourceMerge resourceMerge, Solution dte, ILogger outputWindowLogger, Action<string, string, DialogIcon> showDialogAction)
         {
             InitializeComponent();
 
+            _excelGenerator = new ExcelGenerator();
             _resourceMerge = resourceMerge;
             _showDialogAction = showDialogAction;
             _logMessages = new List<string>();
@@ -46,24 +60,31 @@ namespace GloryS.ResourcesPackage
             base.EndInit();
 
             this.GenResxIcon.Source = DialogRes.ResxGen.GetImageSource();
+
             this.ExportToExcelIcon.Source = DialogRes.ExportToExcel.GetImageSource();
             this.ImportFromExcelIcon.Source = DialogRes.ImpotrFromExcel.GetImageSource();
+
+            this.ExportToGDriveIcon.Source = DialogRes.ExportToGdrive.GetImageSource();
+            this.ImportFromGDriveIcon.Source = DialogRes.ImpotrFromGdrive.GetImageSource();
+
+            this.ExcelIcon.Source = DialogRes.Excel.GetImageSource();
+            this.GoogleDriveIcon.Source = DialogRes.Gdrive.GetImageSource();
         }
 
         private void InitializeData(Solution solution)
         {
             List<Project> projectsList = solution.GetAllProjects()
                 .Where(proj =>
-                    proj.GetAllItems().Any(item => System.IO.Path.GetExtension(item.Name) == ".resx")
+                    proj.GetAllItems().Any(item => Path.GetExtension(item.Name) == ".resx")
                 )
                 .ToList();
 
             List<int> supportedCultures = projectsList
-                .SelectMany(proj => proj.GetAllItems().Select(item => item.Name).Where(itemName => System.IO.Path.GetExtension(itemName) == ".resx")
-                    .Select(System.IO.Path.GetFileNameWithoutExtension)
+                .SelectMany(proj => proj.GetAllItems().Select(item => item.Name).Where(itemName => Path.GetExtension(itemName) == ".resx")
+                    .Select(Path.GetFileNameWithoutExtension)
                     .Select(fileName =>
                     {
-                        string culture = System.IO.Path.GetExtension(fileName);
+                        string culture = Path.GetExtension(fileName);
 
                         return String.IsNullOrEmpty(culture) ? CultureInfo.InvariantCulture.LCID : CultureInfo.GetCultureInfo(culture.Substring(1)).LCID;
                     }))
@@ -80,17 +101,20 @@ namespace GloryS.ResourcesPackage
             _showDialogAction(title, message, icon);
         }
 
-        private void GenerateButton_Click(object sender, RoutedEventArgs e)
+        private async void GenerateButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                _resourceMerge.UpdateResources(ViewModel.SelectedCultures, ViewModel.SelectedProjects, removeFiles: true);
+                ShowOverlay(GenResxIcon);
+                await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, removeFiles: true);
                 ViewModel.UpdateInitiallySelectedCultures();
 
+                HideOverlay();
                 ShowDialogWindow(DialogIcon.Info, DialogRes.Success, String.Format(LoggerRes.SuccessfullyGeneratedFormat, String.Join(LoggerRes.Delimiter, _logMessages)));
             }
             catch (Exception ex)
             {
+                HideOverlay();
                 ShowDialogWindow(DialogIcon.Critical, DialogRes.Exception, ex.ToString() + LoggerRes.Delimiter + String.Join(LoggerRes.Delimiter, _logMessages));
 
                 throw;
@@ -101,11 +125,11 @@ namespace GloryS.ResourcesPackage
             }
         }
 
-        private void ExportToExcel_Click(object sender, RoutedEventArgs e)
+        private async void ExportToExcel_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var saveFileDialog = new Microsoft.Win32.SaveFileDialog();
+                var saveFileDialog = new SaveFileDialog();
                 saveFileDialog.AddExtension = true;
                 saveFileDialog.FileName = "Resources";
                 saveFileDialog.DefaultExt = ".xlsx";
@@ -114,35 +138,33 @@ namespace GloryS.ResourcesPackage
 
                 if (saveFileDialog.ShowDialog() == true)
                 {
-                    _resourceMerge.UpdateResources(ViewModel.SelectedCultures, ViewModel.SelectedProjects, removeFiles: false);
+                    ShowOverlay(GenResxIcon);
+                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, removeFiles: false);
                     ViewModel.UpdateInitiallySelectedCultures();
 
-                    var result = _resourceMerge.ExportToExcelFile(ViewModel.SelectedCultures, ViewModel.SelectedProjects, System.IO.Path.GetFileNameWithoutExtension(saveFileDialog.FileName));
+                    ShowOverlay(ExportToExcelIcon);
+                    await _resourceMerge.ExportToDocumentAsync(_excelGenerator, saveFileDialog.FileName, ViewModel.SelectedCultures, ViewModel.SelectedProjects);
 
-                    if (File.Exists(saveFileDialog.FileName))
-                    {
-                        File.Delete(saveFileDialog.FileName);
-                    }
-
-                    using (FileStream fileStream = File.Create(saveFileDialog.FileName))
-                    {
-                        fileStream.Write(result.Bytes, 0, result.Bytes.Length);
-                    }
-
-                    System.Diagnostics.Process.Start("explorer.exe", String.Format("/n /select,{0},{1}", System.IO.Path.GetDirectoryName(saveFileDialog.FileName), System.IO.Path.GetFileName(saveFileDialog.FileName)));
+                    HideOverlay();
+                    Process.Start("explorer.exe", String.Format("/n /select,{0},{1}", Path.GetDirectoryName(saveFileDialog.FileName), Path.GetFileName(saveFileDialog.FileName)));
                 }
             }
             catch (Exception ex)
             {
+                HideOverlay();
                 ShowDialogWindow(DialogIcon.Critical, DialogRes.Exception, ex.ToString());
+            }
+            finally
+            {
+                _logMessages.Clear();
             }
         }
 
-        private void ImportFromExcel_Click(object sender, RoutedEventArgs e)
+        private async void ImportFromExcel_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var openFileDialog = new Microsoft.Win32.OpenFileDialog();
+                var openFileDialog = new OpenFileDialog();
                 openFileDialog.AddExtension = true;
                 openFileDialog.FileName = "Resources";
                 openFileDialog.DefaultExt = ".xlsx";
@@ -151,21 +173,25 @@ namespace GloryS.ResourcesPackage
 
                 if (openFileDialog.ShowDialog() == true)
                 {
-                    _resourceMerge.UpdateResources(ViewModel.SelectedCultures, ViewModel.SelectedProjects, removeFiles: false);
+                    ShowOverlay(GenResxIcon);
+                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, removeFiles: false);
                     using (var reader = File.OpenRead(openFileDialog.FileName))
                     {
                         byte[] buffer = new byte[reader.Length];
 
                         reader.Read(buffer, 0, (int) reader.Length);
 
-                        _resourceMerge.ImportFromExcel(ViewModel.SelectedCultures, ViewModel.SelectedProjects, new FileInfoContainer(buffer, openFileDialog.FileName));
+                        ShowOverlay(ImportFromExcelIcon);
+                        await _resourceMerge.ImportFromDocumentAsync(_excelGenerator, openFileDialog.FileName, ViewModel.SelectedCultures, ViewModel.SelectedProjects);
                     }
 
+                    HideOverlay();
                     ShowDialogWindow(DialogIcon.Info, DialogRes.Success, String.Format(LoggerRes.SuccessfullyImportedFormat, String.Join(LoggerRes.Delimiter, _logMessages)));
                 }
             }
             catch (Exception ex)
             {
+                HideOverlay();
                 ShowDialogWindow(DialogIcon.Critical, DialogRes.Exception, ex.ToString() + LoggerRes.Delimiter + String.Join(LoggerRes.Delimiter, _logMessages));
 
                 throw;
@@ -192,6 +218,106 @@ namespace GloryS.ResourcesPackage
             foreach (CultureSelectItem cultureItem in ViewModel.CulturesList)
             {
                 cultureItem.IsVisible = cultureItem.CultureName.IndexOf(text, StringComparison.OrdinalIgnoreCase) != -1;
+            }
+        }
+
+        private void ShowOverlay(Image image)
+        {
+            OverlayImage.Source = image.Source;
+            Overlay.Visibility = Visibility.Visible;
+        }
+
+        public void HideOverlay()
+        {
+            OverlayImage.Source = null;
+            Overlay.Visibility = Visibility.Hidden;
+        }
+
+        private async Task<DialogResult> GetGoogleService(Action<string, string> setPath)
+        {
+            if (_googleDocGenerator == null)
+            {
+                OAuth2Parameters parameters = new OAuth2Parameters
+                {
+                    ClientId = "261863669828-1k61kiqfjcci0psjr5e00vcpnsnllnug.apps.googleusercontent.com",
+                    ClientSecret = "IDtucbpfYi3C7zWxsJUX4HbV",
+                    RedirectUri = "urn:ietf:wg:oauth:2.0:oob",
+                    Scope = "https://spreadsheets.google.com/feeds https://docs.google.com/feeds",
+                    ResponseType = "code"
+                };
+                string authorizationUrl = OAuthUtil.CreateOAuth2AuthorizationUrl(parameters);
+
+                var browserDialog = new BrowserDialog(TimeSpan.FromSeconds(30), new Uri(authorizationUrl));
+
+                try
+                {
+                    if (await browserDialog.ShowAsync(code => parameters.AccessCode = code) != DialogResult.OK)
+                    {
+                        return DialogResult.Cancel;
+                    }
+                }
+                catch (Exception e)
+                {
+                    ShowDialogWindow(DialogIcon.Critical, DialogRes.Exception, e.ToString());
+
+                    throw;
+                }
+
+                OAuthUtil.GetAccessToken(parameters);
+
+                _googleOAuth2Parameters = parameters;
+
+                var service = new SpreadsheetsService("MySpreadsheetIntegration-v1")
+                {
+                    RequestFactory = new GOAuth2RequestFactory(null, "MySpreadsheetIntegration-v1", parameters)
+                };
+
+                _googleDocGenerator = new GoogleDocGenerator(service);
+            }
+            else
+            {
+                if (_googleOAuth2Parameters.TokenExpiry <= DateTime.Now)
+                {
+                    OAuthUtil.RefreshAccessToken(_googleOAuth2Parameters);
+                }
+            }
+
+            if (_selectDocumentDialog == null)
+            {
+                _selectDocumentDialog = new SelectGoogleDocumentDialog(_showDialogAction, _googleDocGenerator);
+            }
+
+            DialogResult dialogResult = await _selectDocumentDialog.ShowAsync(setPath);
+
+            return dialogResult;
+        }
+
+        private async void ExportToGDrive_Click(object sender, RoutedEventArgs e)
+        {
+            string documentPath = null;
+            string documentPublicUrl = null;
+
+            try
+            {
+                if (await GetGoogleService((path, publicUrl) => { documentPath = path; documentPublicUrl = publicUrl; }) == DialogResult.OK)
+                {
+                    ShowOverlay(GenResxIcon);
+                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, removeFiles: false);
+                    ViewModel.UpdateInitiallySelectedCultures();
+
+                    ShowOverlay(ExportToGDriveIcon);
+                    await _resourceMerge.ExportToDocumentAsync(_googleDocGenerator, documentPath, ViewModel.SelectedCultures, ViewModel.SelectedProjects);
+
+                    HideOverlay();
+                    Process.Start(documentPublicUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                HideOverlay();
+                ShowDialogWindow(DialogIcon.Critical, DialogRes.Exception, ex.ToString());
+
+                throw;
             }
         }
     }
