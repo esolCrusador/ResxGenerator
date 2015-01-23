@@ -85,6 +85,7 @@
     <Compile Include="Models\ExternalSource.cs" />
     <Compile Include="Models\ExternalSourceVm.cs" />
     <Compile Include="Models\GoogleDocumentVm.cs" />
+    <Compile Include="Models\StatusProgress.cs" />
     <Compile Include="ProjectSelectItem.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">

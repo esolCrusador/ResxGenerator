@@ -1,8 +1,11 @@
 ﻿<Window  x:Class="ResxPackage.Dialog.SelectGoogleDocument"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="{x:Static resources:DialogRes.SelectDocument}" Height="400" Width="450"
-        xmlns:resources="clr-namespace:ResxPackage.Resources;assembly=ResxPackage.Resources">
+        xmlns:resources="clr-namespace:ResxPackage.Resources;assembly=ResxPackage.Resources"
+        Title="{x:Static resources:DialogRes.SelectDocument}" Height="400" Width="450">
+    <Window.Resources>
+        <resources:DialogRes x:Key="L"/>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
@@ -13,7 +16,7 @@
             <ColumnDefinition Width="109" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Button Name="RefreshButton" Content="{x:Static resources:DialogRes.Refresh}" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Top" Width="75" Height="20" Grid.Column="0" Grid.Row="0" Click="RefreshButton_Click" />
+        <Button Name="RefreshButton" Content="{Binding Path=Refresh, Source={StaticResource L}}" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Top" Width="75" Height="20" Grid.Column="0" Grid.Row="0" Click="RefreshButton_Click" />
         <Button Name="CreateLink" Grid.Column="1" Grid.Row="0" Margin="10" Padding="0" Cursor="Hand" Tag="https://docs.google.com/spreadsheets/create" Click="CreateLink_Click">
         <TextBlock Text="https://docs.google.com/spreadsheets/create" FontWeight="Bold" TextDecorations="Underline" Margin="0" Padding="0" Foreground="Blue" />
         </Button>
@@ -26,7 +29,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
-        <Button Content="{x:Static resources:DialogRes.Ok}" Name="OkButton" HorizontalAlignment="Left" Margin="10" Grid.Row="2" Grid.Column="0" Width="75" Click="OkButton_Click"/>
-        <Button Content="{x:Static resources:DialogRes.Cancel}" Name="CancelButton" HorizontalAlignment="Right" Margin="10" Grid.Row="2" Grid.Column="1" Width="75" Click="CancelButton_Click" />
+        <Button Content="{Binding Path=Ok, Source={StaticResource L}}" Name="OkButton" HorizontalAlignment="Left" Margin="10" Grid.Row="2" Grid.Column="0" Width="75" Click="OkButton_Click"/>
+        <Button Content="{Binding Path=Cancel, Source={StaticResource L}}" Name="CancelButton" HorizontalAlignment="Right" Margin="10" Grid.Row="2" Grid.Column="1" Width="75" Click="CancelButton_Click" />
     </Grid>
 </Window>

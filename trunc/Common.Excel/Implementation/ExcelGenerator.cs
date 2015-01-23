@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Common.Excel.Contracts;
 using Common.Excel.Models;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using ResxPackage.Resources;
 
 namespace Common.Excel.Implementation
 {
@@ -14,22 +16,24 @@ namespace Common.Excel.Implementation
     {
         //For Excel2007 and above .xlsx files
 
-        public Task ExportToDocumentAsync<TModel>(string path, IReadOnlyList<ResGroupModel<TModel>> groups) where TModel : IRowModel
+        public Task ExportToDocumentAsync<TModel>(string path, IReadOnlyList<ResGroupModel<TModel>> groups, IStatusProgress progress, CancellationToken cancellationToken) where TModel : IRowModel
         {
-            return Task.Run(()=> ExportToDocument(path, groups));
+            return Task.Run(()=> ExportToDocument(path, groups, progress, cancellationToken), cancellationToken);
         }
 
-        public Task<IReadOnlyList<ResGroupModel<TModel>>> ImportFromExcelAsync<TModel>(string path) where TModel : IRowModel, new()
+        public Task<IReadOnlyList<ResGroupModel<TModel>>> ImportFromExcelAsync<TModel>(string path, IStatusProgress progress, CancellationToken cancellationToken) where TModel : IRowModel, new()
         {
             return Task.Run(() => ImportFromExcel<TModel>(path));
         }
 
-        public void ExportToDocument<TModel>(string path, IReadOnlyList<ResGroupModel<TModel>> groups) where TModel : IRowModel
+        private void ExportToDocument<TModel>(string path, IReadOnlyList<ResGroupModel<TModel>> groups, IStatusProgress progress, CancellationToken cancellationToken) where TModel : IRowModel
         {
             if (groups.Count == 0)
             {
                 throw new ArgumentException("There is not resource files to export", "groups");
             }
+
+            progress.Report(StatusRes.ExportingToExcel, 0);
 
             using (var stream = new MemoryStream())
             {
@@ -37,6 +41,9 @@ namespace Common.Excel.Implementation
                 SpreadsheetDocument spreadsheet = Excel.CreateWorkbook(stream);
                 Excel.AddBasicStyles(spreadsheet);
                 Excel.AddAdditionalStyles(spreadsheet);
+
+                double totalRows = groups.Sum(g => g.Tables.Sum(t => t.Rows.Count));
+                int rowIndexReport = 1;
 
                 for (int projectIndex = 0; projectIndex < groups.Count; projectIndex++)
                 {
@@ -99,7 +106,12 @@ namespace Common.Excel.Implementation
                             }
 
                             rowIndex++;
+
+                            rowIndexReport++;
                         }
+
+                        progress.Report(100 * rowIndexReport / totalRows);
+                        cancellationToken.ThrowIfCancellationRequested();
 
                         Excel.SetCellValue(spreadsheet, worksheet, 1, rowIndex++, " ", false, false);
                     }

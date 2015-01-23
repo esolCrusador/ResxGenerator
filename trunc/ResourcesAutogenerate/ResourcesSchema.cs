@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Resources;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms.VisualStyles;
+using Common.Excel;
 using Common.Excel.Contracts;
 using Common.Excel.Models;
+using DocumentFormat.OpenXml.Office2013.PowerPoint.Roaming;
 using EnvDTE;
 using ResourcesAutogenerate.DomainModels;
 using ResxPackage.Resources;
@@ -17,6 +22,7 @@ namespace ResourcesAutogenerate
     {
         private static readonly string InvariantCultureDisplayName = PackageRes.DefaultCulture;
         private static readonly int InvariantCultureId = CultureInfo.InvariantCulture.LCID;
+        private static readonly HashSet<string> NonCultureExtensions = new HashSet<string> {".cshtml", ".aspx", ".ascx", ""};
 
         private ILogger _logger;
 
@@ -25,14 +31,17 @@ namespace ResourcesAutogenerate
             _logger = logger;
         }
 
-        public Task UpdateResourcesAsync(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, bool removeFiles = true)
+        public Task UpdateResourcesAsync(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken, bool removeFiles = true)
         {
-            return Task.Run(() => UpdateResources(selectedCultures, selectedProjects, removeFiles));
+            return Task.Run(() => UpdateResources(selectedCultures, selectedProjects, progress, cancellationToken, removeFiles), cancellationToken);
         }
 
-        public async Task ExportToDocumentAsync(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects)
+        public async Task ExportToDocumentAsync(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken)
         {
-            SolutionResources solutionResources = GetSolutionResources(selectedCultures, selectedProjects);
+            progress.Report(StatusRes.GettingProjectsResources, 0);
+            SolutionResources solutionResources = await GetSolutionResourcesAsync(selectedCultures, selectedProjects, progress, cancellationToken);
+
+            progress.Report(StatusRes.PreparingResourcesToExport, 0);
 
             var cultures = selectedCultures.Select(CultureInfo.GetCultureInfo)
                 .ToDictionary(
@@ -80,6 +89,8 @@ namespace ResourcesAutogenerate
                             Rows = rows
                         };
 
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         return tableModel;
                     })
                         .Where(table => table.Rows.Count != 0)
@@ -88,14 +99,22 @@ namespace ResourcesAutogenerate
                 .Where(res => res.Tables.Count != 0)
                 .ToList();
 
-            await documentGenerator.ExportToDocumentAsync(path, groups);
+            await documentGenerator.ExportToDocumentAsync(path, groups, progress, cancellationToken);
         }
 
-        public async Task ImportFromDocumentAsync(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects)
+        public Task ImportFromDocumentAsync(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken)
         {
-            IReadOnlyList<ResGroupModel<ResExcelModel>> data = await documentGenerator.ImportFromExcelAsync<ResExcelModel>(path);
+            return Task.Run(() => ImportFromDocument(documentGenerator, path, selectedCultures, selectedProjects, progress, cancellationToken), cancellationToken);
+        }
 
-            SolutionResources resources = GetSolutionResources(selectedCultures, selectedProjects);
+        private async void ImportFromDocument(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken)
+        {
+            IReadOnlyList<ResGroupModel<ResExcelModel>> data = await documentGenerator.ImportFromExcelAsync<ResExcelModel>(path, progress, cancellationToken);
+
+            progress.Report(StatusRes.GettingProjectsResources, 0);
+            SolutionResources resources = await GetSolutionResourcesAsync(selectedCultures, selectedProjects, progress, cancellationToken);
+
+            progress.Report(StatusRes.MergingResources, 0);
 
             var projectsJoin = resources.ProjectResources
                 .Join(data, projRes => projRes.ProjectName, excelProjRes => excelProjRes.GroupTitle, (projRes, excelProjRes) => new { ProjRes = projRes, ExcelProjRes = excelProjRes });
@@ -149,14 +168,21 @@ namespace ResourcesAutogenerate
             }
         }
 
-        public void UpdateResources(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, bool removeFiles = true)
+        public void UpdateResources(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken, bool removeFiles = true)
         {
             IReadOnlyDictionary<int, CultureInfo> selectedCultureInfos = selectedCultures.Select(CultureInfo.GetCultureInfo)
                 .ToDictionary(cult => cult.LCID, cult => cult);
 
             IReadOnlyDictionary<string, Project> projectsDictionary = selectedProjects.ToDictionary(proj => proj.UniqueName, proj => proj);
 
-            SolutionResources solutionResources = GetSolutionResources(null, selectedProjects);
+            progress.Report(StatusRes.GettingProjectsResources, 0);
+            SolutionResources solutionResources = GetSolutionResources(null, selectedProjects, progress, cancellationToken);
+
+            progress.Report(StatusRes.GeneratingResx, 0);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            int resourceFilesProcessed = 0;
+            int resourceFilesCount = solutionResources.ProjectResources.Sum(pr => pr.Resources.Count);
 
             foreach (var projectResources in solutionResources.ProjectResources)
             {
@@ -164,9 +190,37 @@ namespace ResourcesAutogenerate
 
                 foreach (Dictionary<int, ResourceData> resourceFileGroup in projectResources.Resources.Values)
                 {
-                    var projectItems2Remove = resourceFileGroup.Where(f => !selectedCultureInfos.ContainsKey(f.Key))
-                        .Join(project.GetAllItems(), f => f.Value.ResourcePath, item => item.FileNames[0], (f, item) => new { ProjectItem = item, CultureId = f.Key })
-                        .ToList();
+                    //Removing culture files without neutral culture file. TODO: find if it is required.
+                    ResourceData neutralCulture;
+                    if (!resourceFileGroup.TryGetValue(InvariantCultureId, out neutralCulture))
+                    {
+                        _logger.Log(String.Format(LoggerRes.MissingNeutralCulture, resourceFileGroup.Values.First().ResourcePath, String.Join("\r\n", resourceFileGroup.Values.Select(r => r.ResourcePath))));
+
+                        foreach (var projectItem in resourceFileGroup.Values)
+                        {
+                            _logger.Log(String.Format(LoggerRes.RemovedFormat, projectItem.ProjectItem.FileNames[0]));
+
+                            projectItem.ProjectItem.Delete();
+                        }
+
+                        resourceFileGroup.Clear();
+                        project.Save();
+                        continue;
+                    }
+
+                    var items2Remove = resourceFileGroup.Where(f => !selectedCultureInfos.ContainsKey(f.Key)).ToList();
+
+                    List<KeyValuePair<int, ProjectItem>> projectItems2Remove;
+                    if (items2Remove.Count == 0)
+                    {
+                        projectItems2Remove = new List<KeyValuePair<int, ProjectItem>>(0);
+                    }
+                    else
+                    {
+                        projectItems2Remove = items2Remove
+                            .Join(projectResources.ResourceProjectItems, f => f.Value.ResourcePath, item => item.FileNames[0], (f, item) => new KeyValuePair<int, ProjectItem>(f.Key, item))
+                            .ToList();
+                    }
 
                     var cultures2Add = selectedCultureInfos.Where(cult => !resourceFileGroup.ContainsKey(cult.Key)).Select(cult => cult.Value).ToList();
 
@@ -174,18 +228,16 @@ namespace ResourcesAutogenerate
                     {
                         foreach (var projectItem in projectItems2Remove)
                         {
-                            _logger.Log(String.Format(LoggerRes.RemovedFormat, projectItem.ProjectItem.FileNames[0]));
+                            _logger.Log(String.Format(LoggerRes.RemovedFormat, projectItem.Value.FileNames[0]));
 
-                            projectItem.ProjectItem.Delete();
-                            resourceFileGroup.Remove(projectItem.CultureId);
+                            projectItem.Value.Delete();
+                            resourceFileGroup.Remove(projectItem.Key);
                         }
                     }
 
-                    var neutralCulture = resourceFileGroup[InvariantCultureId];
-
                     foreach (var cultureInfo in cultures2Add)
                     {
-                        string resourcePath = Path.Combine(Path.GetDirectoryName(neutralCulture.ResourcePath), neutralCulture.ResourceName + "." + cultureInfo.TwoLetterISOLanguageName.ToUpper() + ".resx");
+                        string resourcePath = Path.Combine(Path.GetDirectoryName(neutralCulture.ResourcePath), Path.GetFileName(neutralCulture.ResourceName) + "." + cultureInfo.TwoLetterISOLanguageName.ToUpper() + ".resx");
 
                         using (File.Create(resourcePath)) { }
 
@@ -211,6 +263,9 @@ namespace ResourcesAutogenerate
                     UpdateResourceFiles(neutralCulture, otherCultureResources);
 
                     project.Save();
+
+                    progress.Report((int) Math.Round((double) 100*(++resourceFilesProcessed)/resourceFilesCount));
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
             }
         }
@@ -309,7 +364,12 @@ namespace ResourcesAutogenerate
             return cultResources;
         }
 
-        private SolutionResources GetSolutionResources(IEnumerable<int> selectedCultures, IEnumerable<Project> projects)
+        private Task<SolutionResources> GetSolutionResourcesAsync(IEnumerable<int> selectedCultures, IReadOnlyCollection<Project> projects, IStatusProgress progress, CancellationToken cancellationToken)
+        {
+            return Task.Run(() => GetSolutionResources(selectedCultures, projects, progress, cancellationToken), cancellationToken);
+        }
+
+        private SolutionResources GetSolutionResources(IEnumerable<int> selectedCultures, IReadOnlyCollection<Project> projects, IStatusProgress progress, CancellationToken cancellationToken)
         {
             Func<ResourceData, bool> resourceFilesFilter;
             if (selectedCultures == null)
@@ -323,41 +383,83 @@ namespace ResourcesAutogenerate
                 resourceFilesFilter = r => selectedCulturesHashSet.Contains(r.Culture.LCID);
             }
 
-            return new SolutionResources
+            var progresses = progress.CreateParallelProgresses(0.7, 0.3);
+            var dteProjectsProgress = progresses[0];
+            var resourceContentProgress = progresses[1];
+
+            double projectsCount = projects.Count;
+
+            var projectResourceItems = new SolutionResources
             {
-                ProjectResources = projects.Select(project =>
-                    new ProjectResources
+                ProjectResources = projects.Select((project, index) =>
+                {
+                    string projectDirectory= Path.GetDirectoryName(project.FullName);
+                    var resourceProjectItems = project.GetAllItems().Where(projItem => Path.GetExtension(projItem.FileNames[0]) == ".resx").ToList();
+
+                    dteProjectsProgress.Report(100*(index + 1)/projectsCount);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    return new ProjectResources
                     {
                         ProjectName = project.Name,
+                        ProjectDirectory = projectDirectory,
                         ProjectId = project.UniqueName,
-
-                        Resources = project.GetAllItems()
-                            .Where(projItem => Path.GetExtension(projItem.FileNames[0]) == ".resx")
-
-                            .Select(projItem =>
-                            {
-                                string fileName = projItem.FileNames[0];
-
-                                string resName = Path.GetFileNameWithoutExtension(fileName);
-                                string cultureName = Path.GetExtension(resName);
-                                resName = Path.GetFileNameWithoutExtension(resName);
-
-                                return new ResourceData
-                                    (
-                                    resourceName: resName,
-                                    resourcePath: fileName,
-                                    culture: String.IsNullOrEmpty(cultureName) ? CultureInfo.InvariantCulture : CultureInfo.GetCultureInfo(cultureName.Substring(1)),
-                                    projectItem: projItem,
-                                    resources: GetResourceContent(fileName)
-                                    );
-                            })
-                            .Where(resourceFilesFilter)
-                            .GroupBy(res => res.ResourceName)
-                            .ToDictionary(resGroup => resGroup.Key, resGroup => resGroup.ToDictionary(res => res.Culture.LCID, res => res))
-
-                    })
+                        ResourceProjectItems = resourceProjectItems
+                    };
+                })
                     .ToList()
             };
+
+            double resourceFilesCount = projectResourceItems.ProjectResources.Sum(pr => pr.ResourceProjectItems.Count);
+            int resourceIndex = 0;
+
+            foreach (var projectResourceItem in projectResourceItems.ProjectResources)
+            {
+                int projectDirectoryPathLength = projectResourceItem.ProjectDirectory.Length;
+
+                projectResourceItem.Resources = projectResourceItem.ResourceProjectItems
+                    .Select(projItem =>
+                    {
+                        string fileName = projItem.FileNames[0];
+
+                        //Removing .resx extension.
+                        string resName = Path.GetFileNameWithoutExtension(fileName);
+
+                        string cultureName = Path.GetExtension(resName);
+                        if (NonCultureExtensions.Contains(cultureName))
+                        {
+                            cultureName = string.Empty;
+                        }
+                        else
+                        {
+                            //Removing culture extension.
+                            resName = Path.GetFileNameWithoutExtension(resName);
+                        }
+
+                        string directoryName = (Path.GetDirectoryName(fileName) ?? string.Empty).Substring(projectDirectoryPathLength);
+                        //Relative path to the resource.
+                        resName = Path.Combine(directoryName, resName);
+
+                        resourceContentProgress.Report(100*(++resourceIndex)/resourceFilesCount);
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        return new ResourceData
+                            (
+                            resourceName: resName,
+                            resourcePath: fileName,
+                            culture: String.IsNullOrEmpty(cultureName) ? CultureInfo.InvariantCulture : CultureInfo.GetCultureInfo(cultureName.Substring(1)),
+                            projectItem: projItem,
+                            resources: GetResourceContent(fileName)
+                            );
+                    })
+                    .Where(resourceFilesFilter)
+                    .GroupBy(res => res.ResourceName)
+                    .ToDictionary(resGroup => resGroup.Key, resGroup => resGroup.ToDictionary(res => res.Culture.LCID, res => res));
+            }
+
+
+
+            return projectResourceItems;
         }
     }
 }

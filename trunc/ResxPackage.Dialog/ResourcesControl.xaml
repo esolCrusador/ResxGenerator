@@ -11,6 +11,7 @@
              Height="Auto"
              Width="Auto"
              Name="ResxGenerateControl">
+
     <Control.Resources>
         <Style TargetType="Button">
             <Setter Property="Height" Value="{Binding RelativeSource={RelativeSource TemplatedParent} }" />
@@ -22,6 +23,7 @@
             <Setter Property="Margin" Value="15"/>
         </Style>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <resources:DialogRes x:Key="L" />
     </Control.Resources>
 
     <Grid>
@@ -51,7 +53,7 @@
             </TreeView>
         </ScrollViewer>
 
-        <Label Grid.Row="1" Grid.Column="0" Content="{x:Static resources:DialogRes.Cultures}"/>
+            <Label Grid.Row="1" Grid.Column="0" Content="{Binding Path=Cultures, Source={StaticResource L}}"/>
 
             <ScrollViewer Grid.Column="0" Grid.Row="3">
                 <ItemsControl Name="SelectedCulturesListBox" ItemsSource="{Binding SelectedCulturesList}">
@@ -63,7 +65,7 @@
             </ItemsControl>
             </ScrollViewer>
         <DockPanel Grid.Column="0" Grid.Row="4">
-            <Label Content="{x:Static resources:DialogRes.Filter}" />
+                <Label Content="{Binding Path=Filter, Source={StaticResource L}}" />
             <TextBox Name="FilterCultures" TextChanged="FilterCultures_OnTextChanged"></TextBox>
         </DockPanel>
         <ScrollViewer  Grid.Column="0" Grid.Row="5">
@@ -84,22 +86,22 @@
                     <Image Name="GoogleDriveIcon"/>
                 </RadioButton>
             </StackPanel>
-            <Button Name="GenerateButton" HorizontalAlignment="Left" ToolTip="{x:Static resources:DialogRes.SyncResourcesTooltip}" Click="GenerateButton_Click" >
+                <Button Name="GenerateButton" HorizontalAlignment="Left" ToolTip="{Binding Path=SyncResourcesTooltip, Source={StaticResource L}}" Click="GenerateButton_Click" >
                 <Image Name="GenResxIcon" />
             </Button>
             <StackPanel Visibility="{Binding Path=ExternalSource.IsExcelSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <Button Name="ExportToExcel" ToolTip="{x:Static resources:DialogRes.ExportToExcelTooltip}" Click="ExportToExcel_Click">
+                    <Button Name="ExportToExcel" ToolTip="{Binding Path=ExportToExcelTooltip, Source={StaticResource L}}" Click="ExportToExcel_Click">
                     <Image Name="ExportToExcelIcon" />
                 </Button>
-                <Button Name="ImportFromExcel" ToolTip="{x:Static resources:DialogRes.ImportFromExcelTooltip}" Click="ImportFromExcel_Click">
+                    <Button Name="ImportFromExcel" ToolTip="{Binding Path=ImportFromExcelTooltip, Source={StaticResource L}}" Click="ImportFromExcel_Click">
                     <Image Name="ImportFromExcelIcon" />
                 </Button>
             </StackPanel>
             <StackPanel Visibility="{Binding Path=ExternalSource.IsGoogleDriveSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <Button Name="ExportToGDrive" ToolTip="{x:Static resources:DialogRes.ExportToGDriveTooltip}" Click="ExportToGDrive_Click">
+                    <Button Name="ExportToGDrive" ToolTip="{Binding Path=ExportToGDriveTooltip, Source={StaticResource L}}" Click="ExportToGDrive_Click">
                     <Image Name="ExportToGDriveIcon" />
                 </Button>
-                <Button Name="ImportFromGDrive" ToolTip="{x:Static resources:DialogRes.ImportFromGDriveTooltip}">
+                    <Button Name="ImportFromGDrive" ToolTip="{Binding Path=ImportFromGDriveTooltip, Source={StaticResource L}}">
                     <Image Name="ImportFromGDriveIcon" />
                 </Button>
             </StackPanel>
@@ -112,7 +114,38 @@
               VerticalAlignment="Stretch"
               Background="Black"
               Opacity="0.6" />
-            <Image Name="OverlayImage" HorizontalAlignment="Center" VerticalAlignment="Center" Height="32"></Image>
+            <StatusBar HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StatusBar.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="*" MinWidth="200" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                        </Grid>
+                    </ItemsPanelTemplate>
+                </StatusBar.ItemsPanel>
+                <StatusBarItem Grid.Column="0" Grid.Row="0">
+                    <Image Name="OverlayImage" HorizontalAlignment="Center" VerticalAlignment="Center" Height="32"></Image>
+                </StatusBarItem>
+                <StatusBarItem Grid.Column="1" Grid.Row="0">
+                    <TextBlock Name="StatusText" Padding="10, 0, 0, 0">Status Text</TextBlock>
+                </StatusBarItem>
+                <StatusBarItem Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" HorizontalContentAlignment="Stretch">
+                    <ProgressBar Name="StatusProgress" Orientation="Horizontal" Maximum="100" Height="15" Value="50"></ProgressBar>
+                </StatusBarItem>
+                <StatusBarItem Grid.Column="0" Grid.Row="2">
+                    <TextBlock Name="StatusProgressText">50%</TextBlock>
+                </StatusBarItem>
+                <StatusBarItem Grid.Column="1" Grid.Row="2" HorizontalContentAlignment="Right">
+                    <Button Name="CancelOperation" Content="{Binding Source={StaticResource L}, Path=Cancel}" Margin="0" Click="CancelOperation_Click"></Button>
+                </StatusBarItem>
+            </StatusBar>
         </Grid>
     </Grid>
 </UserControl>

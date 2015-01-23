@@ -3,9 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{x:Static resources:DialogRes.PermissionsRequest}" Height="450" Width="650"
         xmlns:resources="clr-namespace:ResxPackage.Resources;assembly=ResxPackage.Resources">
+    <Window.Resources>
+        <resources:DialogRes x:Key="L"/>
+    </Window.Resources>
     <Grid>
         <TextBlock Name="DelayText" 
-                   Text="{x:Static resources:DialogRes.DelayText}"
+                   Text="{Binding Path=DelayText, Source={StaticResource L}}"
                    TextWrapping="Wrap"
                    TextAlignment="Center"
                    VerticalAlignment="Center"

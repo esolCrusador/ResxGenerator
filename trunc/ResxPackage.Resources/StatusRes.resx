@@ -117,29 +117,46 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Delimiter" xml:space="preserve">
-    <value>
-</value>
+  <data name="CreatingCellsMap" xml:space="preserve">
+    <value>Creating cells map...</value>
   </data>
-  <data name="MissingNeutralCulture" xml:space="preserve">
-    <value>Missing neutral culture for key "{0}". Removing resources:
-{1}</value>
+  <data name="DeletingOldWorksheets" xml:space="preserve">
+    <value>Deleting old worksheets...</value>
   </data>
-  <data name="OperationCancelled" xml:space="preserve">
-    <value>The operation was cancelled</value>
+  <data name="ExportingToExcel" xml:space="preserve">
+    <value>Exporting to excel...</value>
   </data>
-  <data name="RemovedFormat" xml:space="preserve">
-    <value>Removed resource file {0}</value>
+  <data name="ExportToGDrive" xml:space="preserve">
+    <value>Exporting to google drive...</value>
   </data>
-  <data name="SuccessfullyGeneratedFormat" xml:space="preserve">
-    <value>Resources successfully generated
-{0}</value>
+  <data name="GeneratingResx" xml:space="preserve">
+    <value>Generating resource files...</value>
   </data>
-  <data name="SuccessfullyImportedFormat" xml:space="preserve">
-    <value>Resources data was successfully imported.
-{0}</value>
+  <data name="GettingProjectsResources" xml:space="preserve">
+    <value>Gettings project resources...</value>
   </data>
-  <data name="UpdatedContentFormat" xml:space="preserve">
-    <value>Updated resource content of {0}</value>
+  <data name="GettingSpreadsheet" xml:space="preserve">
+    <value>Getting spreadsheet...</value>
+  </data>
+  <data name="GettingWorksheets" xml:space="preserve">
+    <value>Getting worksheets...</value>
+  </data>
+  <data name="InsertingNewWorksheets" xml:space="preserve">
+    <value>Inserting new worksheets...</value>
+  </data>
+  <data name="MergingResources" xml:space="preserve">
+    <value>Merging resources...</value>
+  </data>
+  <data name="PreparingResourcesToExport" xml:space="preserve">
+    <value>Preparing resources to export...</value>
+  </data>
+  <data name="PushingCells" xml:space="preserve">
+    <value>Pushing data...</value>
+  </data>
+  <data name="RenamingOldWorksheets" xml:space="preserve">
+    <value>Renaming old worksheets...</value>
+  </data>
+  <data name="UpdatingCells" xml:space="preserve">
+    <value>Updating cells...</value>
   </data>
 </root>

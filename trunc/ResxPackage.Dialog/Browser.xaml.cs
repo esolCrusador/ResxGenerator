@@ -28,6 +28,7 @@ namespace ResxPackage.Dialog
         }
         
         public event Action<string> CodeReceived = delegate { };
+        public event Action NavigationCancelled = delegate { };
         public event Action UrlNavigationFailed = delegate { };
 
         public Uri Url
@@ -88,11 +89,18 @@ namespace ResxPackage.Dialog
             {
                 HTMLDocument document = ((HTMLDocument)WebBrowser.Document);
                 IHTMLElement element = document.getElementById("code");
-                IHTMLInputTextElement input = (IHTMLInputTextElement)element;
+                if (element == null)
+                {
+                    Close();
+                }
+                else
+                {
+                    IHTMLInputTextElement input = (IHTMLInputTextElement) element;
 
-                string code = input.value;
+                    string code = input.value;
 
-                CodeReceived(code);
+                    CodeReceived(code);
+                }
             }
         }
     }

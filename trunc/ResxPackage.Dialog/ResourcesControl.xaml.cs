@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -37,7 +38,9 @@ namespace GloryS.ResourcesPackage
 
         private OAuth2Parameters _googleOAuth2Parameters;
         private GoogleDocGenerator _googleDocGenerator;
-        private SelectGoogleDocumentDialog _selectDocumentDialog;
+
+        private StatusProgress _statusProgress;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public ResourcesControl(IResourceMerge resourceMerge, Solution dte, ILogger outputWindowLogger, Action<string, string, DialogIcon> showDialogAction)
         {
@@ -49,6 +52,26 @@ namespace GloryS.ResourcesPackage
             _logMessages = new List<string>();
             ILogger combinedLogger = new CombinedLogger(outputWindowLogger, new DialogLogger(_logMessages));
             resourceMerge.SetLogger(combinedLogger);
+            _statusProgress = new StatusProgress(
+                p =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        StatusProgress.Value = p;
+                        StatusProgressText.Text = (int)Math.Round(p) + "%";
+                    });
+                },
+                (s, p) =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        StatusProgress.Value = p;
+                        StatusProgressText.Text = (int)Math.Round(p) + "%";
+                        StatusText.Text = s;
+                    });
+                }
+                );
+            _cancellationTokenSource = new CancellationTokenSource();
 
             InitializeData(dte);
         }
@@ -84,9 +107,26 @@ namespace GloryS.ResourcesPackage
                     .Select(Path.GetFileNameWithoutExtension)
                     .Select(fileName =>
                     {
-                        string culture = Path.GetExtension(fileName);
+                        string cultureName = Path.GetExtension(fileName);
 
-                        return String.IsNullOrEmpty(culture) ? CultureInfo.InvariantCulture.LCID : CultureInfo.GetCultureInfo(culture.Substring(1)).LCID;
+                        int culture;
+                        if (String.IsNullOrEmpty(cultureName))
+                        {
+                            culture =  CultureInfo.InvariantCulture.LCID;
+                        }
+                        else
+                        {
+                            try
+                            {
+                                culture = CultureInfo.GetCultureInfo(cultureName.Substring(1)).LCID;
+                            }
+                            catch (CultureNotFoundException)
+                            {
+                                culture = CultureInfo.InvariantCulture.LCID;
+                            }
+                        }
+
+                        return culture;
                     }))
                 .Distinct()
                 .ToList();
@@ -105,12 +145,18 @@ namespace GloryS.ResourcesPackage
         {
             try
             {
+                _statusProgress.Report(StatusRes.GeneratingResx, 0);
                 ShowOverlay(GenResxIcon);
-                await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, removeFiles: true);
+                await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, removeFiles: true);
                 ViewModel.UpdateInitiallySelectedCultures();
 
                 HideOverlay();
                 ShowDialogWindow(DialogIcon.Info, DialogRes.Success, String.Format(LoggerRes.SuccessfullyGeneratedFormat, String.Join(LoggerRes.Delimiter, _logMessages)));
+            }
+            catch (OperationCanceledException)
+            {
+                HideOverlay();
+                ShowDialogWindow(DialogIcon.Info, DialogRes.Success, LoggerRes.OperationCancelled);
             }
             catch (Exception ex)
             {
@@ -121,6 +167,7 @@ namespace GloryS.ResourcesPackage
             }
             finally
             {
+                _statusProgress.Clear();
                 _logMessages.Clear();
             }
         }
@@ -139,11 +186,11 @@ namespace GloryS.ResourcesPackage
                 if (saveFileDialog.ShowDialog() == true)
                 {
                     ShowOverlay(GenResxIcon);
-                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, removeFiles: false);
+                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, removeFiles: false);
                     ViewModel.UpdateInitiallySelectedCultures();
 
                     ShowOverlay(ExportToExcelIcon);
-                    await _resourceMerge.ExportToDocumentAsync(_excelGenerator, saveFileDialog.FileName, ViewModel.SelectedCultures, ViewModel.SelectedProjects);
+                    await _resourceMerge.ExportToDocumentAsync(_excelGenerator, saveFileDialog.FileName, ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token);
 
                     HideOverlay();
                     Process.Start("explorer.exe", String.Format("/n /select,{0},{1}", Path.GetDirectoryName(saveFileDialog.FileName), Path.GetFileName(saveFileDialog.FileName)));
@@ -174,7 +221,7 @@ namespace GloryS.ResourcesPackage
                 if (openFileDialog.ShowDialog() == true)
                 {
                     ShowOverlay(GenResxIcon);
-                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, removeFiles: false);
+                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, removeFiles: false);
                     using (var reader = File.OpenRead(openFileDialog.FileName))
                     {
                         byte[] buffer = new byte[reader.Length];
@@ -182,7 +229,7 @@ namespace GloryS.ResourcesPackage
                         reader.Read(buffer, 0, (int) reader.Length);
 
                         ShowOverlay(ImportFromExcelIcon);
-                        await _resourceMerge.ImportFromDocumentAsync(_excelGenerator, openFileDialog.FileName, ViewModel.SelectedCultures, ViewModel.SelectedProjects);
+                        await _resourceMerge.ImportFromDocumentAsync(_excelGenerator, openFileDialog.FileName, ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token);
                     }
 
                     HideOverlay();
@@ -282,12 +329,9 @@ namespace GloryS.ResourcesPackage
                 }
             }
 
-            if (_selectDocumentDialog == null)
-            {
-                _selectDocumentDialog = new SelectGoogleDocumentDialog(_showDialogAction, _googleDocGenerator);
-            }
-
-            DialogResult dialogResult = await _selectDocumentDialog.ShowAsync(setPath);
+            SelectGoogleDocumentDialog selectDocumentDialog = new SelectGoogleDocumentDialog(_showDialogAction, _googleDocGenerator);
+            
+            DialogResult dialogResult = await selectDocumentDialog.ShowAsync(setPath);
 
             return dialogResult;
         }
@@ -301,16 +345,23 @@ namespace GloryS.ResourcesPackage
             {
                 if (await GetGoogleService((path, publicUrl) => { documentPath = path; documentPublicUrl = publicUrl; }) == DialogResult.OK)
                 {
+                    _statusProgress.Report(StatusRes.GeneratingResx, 0);
                     ShowOverlay(GenResxIcon);
-                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, removeFiles: false);
+                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, removeFiles: false);
                     ViewModel.UpdateInitiallySelectedCultures();
 
+                    _statusProgress.Report(StatusRes.ExportToGDrive, 0);
                     ShowOverlay(ExportToGDriveIcon);
-                    await _resourceMerge.ExportToDocumentAsync(_googleDocGenerator, documentPath, ViewModel.SelectedCultures, ViewModel.SelectedProjects);
+                    await _resourceMerge.ExportToDocumentAsync(_googleDocGenerator, documentPath, ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token);
 
                     HideOverlay();
                     Process.Start(documentPublicUrl);
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                HideOverlay();
+                ShowDialogWindow(DialogIcon.Info, DialogRes.Success, LoggerRes.OperationCancelled);
             }
             catch (Exception ex)
             {
@@ -319,6 +370,12 @@ namespace GloryS.ResourcesPackage
 
                 throw;
             }
+        }
+
+        private void CancelOperation_Click(object sender, RoutedEventArgs e)
+        {
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new CancellationTokenSource();
         }
     }
 } ;

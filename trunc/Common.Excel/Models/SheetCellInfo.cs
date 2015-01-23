@@ -32,8 +32,7 @@ namespace Common.Excel.Models
             return new CellEntry(Row, Column, Value)
             {
                 Id = new AtomId(GetIdUri(baseUri)),
-                BatchData = new GDataBatchEntryData(IdString, GDataBatchOperationType.query),
-                InputValue = Value
+                BatchData = new GDataBatchEntryData(IdString, GDataBatchOperationType.query)
             };
         }
 
