@@ -133,6 +133,7 @@ namespace Common.Excel.GoogleSheets
                     service.AsyncOperationCompleted -= evnetHandler;
                     if (progress != null)
                     {
+                        progress.Report(100);
                         service.AsyncOperationProgress -= progressHandler;
                     }
 

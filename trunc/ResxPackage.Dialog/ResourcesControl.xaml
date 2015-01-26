@@ -97,11 +97,11 @@
                     <Image Name="ImportFromExcelIcon" />
                 </Button>
             </StackPanel>
-            <StackPanel Visibility="{Binding Path=ExternalSource.IsGoogleDriveSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Visibility="{Binding Path=ExternalSource.IsGoogleDriveSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Button Name="ExportToGDrive" ToolTip="{Binding Path=ExportToGDriveTooltip, Source={StaticResource L}}" Click="ExportToGDrive_Click">
                     <Image Name="ExportToGDriveIcon" />
                 </Button>
-                    <Button Name="ImportFromGDrive" ToolTip="{Binding Path=ImportFromGDriveTooltip, Source={StaticResource L}}">
+                    <Button Name="ImportFromGDrive" ToolTip="{Binding Path=ImportFromGDriveTooltip, Source={StaticResource L}}" Click="ImportFromGDrive_Click">
                     <Image Name="ImportFromGDriveIcon" />
                 </Button>
             </StackPanel>

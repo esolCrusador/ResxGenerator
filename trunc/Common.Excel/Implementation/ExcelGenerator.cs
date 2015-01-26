@@ -21,7 +21,7 @@ namespace Common.Excel.Implementation
             return Task.Run(()=> ExportToDocument(path, groups, progress, cancellationToken), cancellationToken);
         }
 
-        public Task<IReadOnlyList<ResGroupModel<TModel>>> ImportFromExcelAsync<TModel>(string path, IStatusProgress progress, CancellationToken cancellationToken) where TModel : IRowModel, new()
+        public Task<IReadOnlyList<ResGroupModel<TModel>>> ImportFromDocumentAsync<TModel>(string path, IStatusProgress progress, CancellationToken cancellationToken) where TModel : IRowModel, new()
         {
             return Task.Run(() => ImportFromExcel<TModel>(path));
         }
@@ -33,7 +33,7 @@ namespace Common.Excel.Implementation
                 throw new ArgumentException("There is not resource files to export", "groups");
             }
 
-            progress.Report(StatusRes.ExportingToExcel, 0);
+            progress.Report(StatusRes.ExportingToExcel);
 
             using (var stream = new MemoryStream())
             {

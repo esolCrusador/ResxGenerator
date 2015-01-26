@@ -133,7 +133,7 @@
     <value>Generating resource files...</value>
   </data>
   <data name="GettingProjectsResources" xml:space="preserve">
-    <value>Gettings project resources...</value>
+    <value>Getting project resources...</value>
   </data>
   <data name="GettingSpreadsheet" xml:space="preserve">
     <value>Getting spreadsheet...</value>
@@ -158,5 +158,11 @@
   </data>
   <data name="UpdatingCells" xml:space="preserve">
     <value>Updating cells...</value>
+  </data>
+  <data name="ImportFromGDrive" xml:space="preserve">
+    <value>Importing from google drive...</value>
+  </data>
+  <data name="GettingWorksheetsData" xml:space="preserve">
+    <value>Getting worksheets data...</value>
   </data>
 </root>

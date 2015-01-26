@@ -29,15 +29,15 @@ namespace ResxPackage.Dialog.Models
             Report(ProgressValue);
         }
 
-        public void Report(string status, double percents)
+        public void Report(string status)
         {
-            ProgressValue = percents;
-            _onStatusProgress(status, percents);
+            ProgressValue = 0;
+            _onStatusProgress(status, 0);
         }
 
         public void Clear()
         {
-            Report(string.Empty, 0);
+            Report(string.Empty);
         }
     }
 

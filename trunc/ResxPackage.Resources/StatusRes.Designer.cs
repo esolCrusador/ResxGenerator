@@ -106,7 +106,7 @@ namespace ResxPackage.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Gettings project resources....
+        ///   Looks up a localized string similar to Getting project resources....
         /// </summary>
         public static string GettingProjectsResources {
             get {
@@ -129,6 +129,24 @@ namespace ResxPackage.Resources {
         public static string GettingWorksheets {
             get {
                 return ResourceManager.GetString("GettingWorksheets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Getting worksheets data....
+        /// </summary>
+        public static string GettingWorksheetsData {
+            get {
+                return ResourceManager.GetString("GettingWorksheetsData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Importing from google drive....
+        /// </summary>
+        public static string ImportFromGDrive {
+            get {
+                return ResourceManager.GetString("ImportFromGDrive", resourceCulture);
             }
         }
         

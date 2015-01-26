@@ -145,7 +145,7 @@ namespace GloryS.ResourcesPackage
         {
             try
             {
-                _statusProgress.Report(StatusRes.GeneratingResx, 0);
+                _statusProgress.Report(StatusRes.GeneratingResx);
                 ShowOverlay(GenResxIcon);
                 await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, removeFiles: true);
                 ViewModel.UpdateInitiallySelectedCultures();
@@ -196,6 +196,11 @@ namespace GloryS.ResourcesPackage
                     Process.Start("explorer.exe", String.Format("/n /select,{0},{1}", Path.GetDirectoryName(saveFileDialog.FileName), Path.GetFileName(saveFileDialog.FileName)));
                 }
             }
+            catch (OperationCanceledException)
+            {
+                HideOverlay();
+                ShowDialogWindow(DialogIcon.Info, DialogRes.Success, LoggerRes.OperationCancelled);
+            }
             catch (Exception ex)
             {
                 HideOverlay();
@@ -235,6 +240,11 @@ namespace GloryS.ResourcesPackage
                     HideOverlay();
                     ShowDialogWindow(DialogIcon.Info, DialogRes.Success, String.Format(LoggerRes.SuccessfullyImportedFormat, String.Join(LoggerRes.Delimiter, _logMessages)));
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                HideOverlay();
+                ShowDialogWindow(DialogIcon.Info, DialogRes.Success, LoggerRes.OperationCancelled);
             }
             catch (Exception ex)
             {
@@ -345,12 +355,12 @@ namespace GloryS.ResourcesPackage
             {
                 if (await GetGoogleService((path, publicUrl) => { documentPath = path; documentPublicUrl = publicUrl; }) == DialogResult.OK)
                 {
-                    _statusProgress.Report(StatusRes.GeneratingResx, 0);
+                    _statusProgress.Report(StatusRes.GeneratingResx);
                     ShowOverlay(GenResxIcon);
                     await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, removeFiles: false);
                     ViewModel.UpdateInitiallySelectedCultures();
 
-                    _statusProgress.Report(StatusRes.ExportToGDrive, 0);
+                    _statusProgress.Report(StatusRes.ExportToGDrive);
                     ShowOverlay(ExportToGDriveIcon);
                     await _resourceMerge.ExportToDocumentAsync(_googleDocGenerator, documentPath, ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token);
 
@@ -376,6 +386,48 @@ namespace GloryS.ResourcesPackage
         {
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource = new CancellationTokenSource();
+        }
+
+        private async void ImportFromGDrive_Click(object sender, RoutedEventArgs e)
+        {
+            string documentPath = null;
+
+            try
+            {
+                if (await GetGoogleService((path, publicUrl) =>
+                {
+                    documentPath = path;
+                }) == DialogResult.OK)
+                {
+                    _statusProgress.Report(StatusRes.GeneratingResx);
+                    ShowOverlay(GenResxIcon);
+                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, removeFiles: false);
+                    ViewModel.UpdateInitiallySelectedCultures();
+
+                    _statusProgress.Report(StatusRes.ImportFromGDrive);
+                    ShowOverlay(ImportFromGDriveIcon);
+                    await _resourceMerge.ImportFromDocumentAsync(_googleDocGenerator, documentPath, ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token);
+
+                    HideOverlay();
+                    ShowDialogWindow(DialogIcon.Info, DialogRes.Success, String.Format(LoggerRes.SuccessfullyImportedFormat, String.Join(LoggerRes.Delimiter, _logMessages)));
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                HideOverlay();
+                ShowDialogWindow(DialogIcon.Info, DialogRes.Success, LoggerRes.OperationCancelled);
+            }
+            catch (Exception ex)
+            {
+                HideOverlay();
+                ShowDialogWindow(DialogIcon.Critical, DialogRes.Exception, ex.ToString());
+
+                throw;
+            }
+            finally
+            {
+                _logMessages.Clear();
+            }
         }
     }
 } ;

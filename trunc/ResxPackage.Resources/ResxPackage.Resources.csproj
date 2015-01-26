@@ -90,6 +90,7 @@
     <EmbeddedResource Include="ErrorsRes.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ErrorsRes.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="ExcelRes.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

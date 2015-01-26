@@ -5,7 +5,7 @@ namespace Common.Excel
 {
     public interface IStatusProgress : IAggregateProgress
     {
-        void Report(string status, double percents);
+        void Report(string status);
     }
 
     public interface IAggregateProgress : IProgress<double>

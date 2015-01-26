@@ -38,10 +38,10 @@ namespace ResourcesAutogenerate
 
         public async Task ExportToDocumentAsync(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken)
         {
-            progress.Report(StatusRes.GettingProjectsResources, 0);
+            progress.Report(StatusRes.GettingProjectsResources);
             SolutionResources solutionResources = await GetSolutionResourcesAsync(selectedCultures, selectedProjects, progress, cancellationToken);
 
-            progress.Report(StatusRes.PreparingResourcesToExport, 0);
+            progress.Report(StatusRes.PreparingResourcesToExport);
 
             var cultures = selectedCultures.Select(CultureInfo.GetCultureInfo)
                 .ToDictionary(
@@ -107,14 +107,14 @@ namespace ResourcesAutogenerate
             return Task.Run(() => ImportFromDocument(documentGenerator, path, selectedCultures, selectedProjects, progress, cancellationToken), cancellationToken);
         }
 
-        private async void ImportFromDocument(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken)
+        private async Task ImportFromDocument(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken)
         {
-            IReadOnlyList<ResGroupModel<ResExcelModel>> data = await documentGenerator.ImportFromExcelAsync<ResExcelModel>(path, progress, cancellationToken);
+            IReadOnlyList<ResGroupModel<ResExcelModel>> data = await documentGenerator.ImportFromDocumentAsync<ResExcelModel>(path, progress, cancellationToken);
 
-            progress.Report(StatusRes.GettingProjectsResources, 0);
+            progress.Report(StatusRes.GettingProjectsResources);
             SolutionResources resources = await GetSolutionResourcesAsync(selectedCultures, selectedProjects, progress, cancellationToken);
 
-            progress.Report(StatusRes.MergingResources, 0);
+            progress.Report(StatusRes.MergingResources);
 
             var projectsJoin = resources.ProjectResources
                 .Join(data, projRes => projRes.ProjectName, excelProjRes => excelProjRes.GroupTitle, (projRes, excelProjRes) => new { ProjRes = projRes, ExcelProjRes = excelProjRes });
@@ -175,10 +175,10 @@ namespace ResourcesAutogenerate
 
             IReadOnlyDictionary<string, Project> projectsDictionary = selectedProjects.ToDictionary(proj => proj.UniqueName, proj => proj);
 
-            progress.Report(StatusRes.GettingProjectsResources, 0);
+            progress.Report(StatusRes.GettingProjectsResources);
             SolutionResources solutionResources = GetSolutionResources(null, selectedProjects, progress, cancellationToken);
 
-            progress.Report(StatusRes.GeneratingResx, 0);
+            progress.Report(StatusRes.GeneratingResx);
             cancellationToken.ThrowIfCancellationRequested();
 
             int resourceFilesProcessed = 0;
@@ -279,7 +279,7 @@ namespace ResourcesAutogenerate
                 .ToList();
             if (resData.StringResources.Count != resourcesJoin.Count)
             {
-                throw new MissingManifestResourceException(ErrorsRes.MissingResources);
+                throw new MissingManifestResourceException(String.Format(ErrorsRes.MissingResourceKeys, String.Join(", ", resData.StringResources.Where(r => resourcesJoin.All(rj => rj.Key != r.Key)).Select(r => "\"" + r.Key + "\""))));
             }
 
             if (resourcesJoin.Any(res => res.ExcelEntryData.Value != res.Value.Value||res.ExcelEntryData.Comment!=res.Value.Comment))
