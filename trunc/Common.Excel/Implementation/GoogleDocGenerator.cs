@@ -410,11 +410,11 @@ namespace Common.Excel.Implementation
                 .Select(g => g.ToList()).ToList();
         }
 
-        private static void InsertElementAt<TElement>(List<TElement> list, int index, TElement element)
+        private static void InsertElementAt(List<string> list, int index, string element)
         {
             if (list.Count < index)
             {
-                list.AddRange(Enumerable.Repeat(default(TElement), index - list.Count));
+                list.AddRange(Enumerable.Repeat(string.Empty, index - list.Count));
             }
 
             list.Insert(index, element);

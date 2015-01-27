@@ -270,19 +270,25 @@ namespace ResourcesAutogenerate
             }
         }
 
-        private void UpdateResourceFile(ResourceData resData, IEnumerable<ResourceEntryData> excelResData)
+        private void UpdateResourceFile(ResourceData resData, IEnumerable<ResourceEntryData> docResData)
         {
             //We need to compare only string resources.
-            var resourcesJoin = resData.StringResources
-                .Join(excelResData, res => res.Key, resExcel => resExcel.Key,
-                    (res, excelEntry) => new { Key = res.Key, Value = res.Value, ExcelEntryData = excelEntry })
+            var resourcesJoin = ((from res in resData.StringResources
+                join tempDocRes in docResData
+                    on res.Key equals tempDocRes.Key
+                    into resJoin
+                from docRes in resJoin.DefaultIfEmpty()
+                select new {res.Key, ResourceData = res.Value, DocResourceData = docRes ?? new ResourceEntryData(res.Value.Name, res.Value.Value, res.Value.Comment)}))
+                .Select(resJoin => new {resJoin.Key, resJoin.ResourceData.Value, resJoin.ResourceData.Comment, DocValue = resJoin.DocResourceData.Value, DocComment = resJoin.DocResourceData.Comment})
                 .ToList();
+
+
             if (resData.StringResources.Count != resourcesJoin.Count)
             {
                 throw new MissingManifestResourceException(String.Format(ErrorsRes.MissingResourceKeys, String.Join(", ", resData.StringResources.Where(r => resourcesJoin.All(rj => rj.Key != r.Key)).Select(r => "\"" + r.Key + "\""))));
             }
 
-            if (resourcesJoin.Any(res => res.ExcelEntryData.Value != res.Value.Value||res.ExcelEntryData.Comment!=res.Value.Comment))
+            if (resourcesJoin.Any(res => res.Value != res.DocValue||res.Comment!=res.DocComment))
             {
                 _logger.Log(String.Format(LoggerRes.UpdatedContentFormat, resData.ResourcePath));
 
@@ -292,9 +298,9 @@ namespace ResourcesAutogenerate
                     var resourcesData = resData.NotStringResources
                         .Concat(resourcesJoin.Select(resourceWithEntry =>
                             new KeyValuePair<string, ResXDataNode>(resourceWithEntry.Key,
-                                new ResXDataNode(resourceWithEntry.Key, resourceWithEntry.ExcelEntryData.Value)
+                                new ResXDataNode(resourceWithEntry.Key, resourceWithEntry.DocValue)
                                 {
-                                    Comment = resourceWithEntry.ExcelEntryData.Comment
+                                    Comment = resourceWithEntry.DocComment
                                 })
                             )
                         );
