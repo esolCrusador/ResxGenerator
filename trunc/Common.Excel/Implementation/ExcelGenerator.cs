@@ -23,14 +23,14 @@ namespace Common.Excel.Implementation
 
         public Task<IReadOnlyList<ResGroupModel<TModel>>> ImportFromDocumentAsync<TModel>(string path, IStatusProgress progress, CancellationToken cancellationToken) where TModel : IRowModel, new()
         {
-            return Task.Run(() => ImportFromExcel<TModel>(path));
+            return Task.Run(() => ImportFromExcel<TModel>(path), cancellationToken);
         }
 
         private void ExportToDocument<TModel>(string path, IReadOnlyList<ResGroupModel<TModel>> groups, IStatusProgress progress, CancellationToken cancellationToken) where TModel : IRowModel
         {
             if (groups.Count == 0)
             {
-                throw new ArgumentException("There is not resource files to export", "groups");
+                throw new ArgumentException(ErrorsRes.TherIsNotFilesToExport, "groups");
             }
 
             progress.Report(StatusRes.ExportingToExcel);

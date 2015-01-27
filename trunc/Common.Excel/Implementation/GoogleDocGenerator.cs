@@ -77,7 +77,7 @@ namespace Common.Excel.Implementation
         private async Task PushCellsAsync<TModel>(WorksheetEntry worksheet, ResGroupModel<TModel> group, SemaphoreSlim semaphore, IAggregateProgress progress, CancellationToken cancellationToken) 
             where TModel : IRowModel
         {
-            var progresses = progress.CreateParallelProgresses(0.3, 0.7);
+            var progresses = progress.CreateParallelProgresses(0.2, 0.8);
             var mappingProgress = progresses[0];
             var updatingProgress = progresses[1];
 

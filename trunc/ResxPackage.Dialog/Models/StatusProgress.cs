@@ -69,7 +69,7 @@ namespace ResxPackage.Dialog.Models
 
         public IReadOnlyList<IAggregateProgress> CreateParallelProgresses(int count)
         {
-            return CreateParallelProgresses(Enumerable.Repeat((double)1, count).ToList());
+            return CreateParallelProgresses(Enumerable.Repeat(1.0, count).ToList());
         }
 
         public IReadOnlyList<IAggregateProgress> CreateParallelProgresses(params double[] wieghtes)

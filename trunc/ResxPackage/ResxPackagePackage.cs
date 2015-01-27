@@ -1,19 +1,15 @@
 ﻿using System;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using System.ComponentModel.Design;
 using System.Windows;
-using Common.Excel.Contracts;
-using Common.Excel.Implementation;
 using EnvDTE;
 using GloryS.ResourcesPackage;
 using Microsoft.Internal.VisualStudio.PlatformUI;
-using Microsoft.Win32;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using ResourcesAutogenerate;
 using ResxPackage.Dialog;
 using ResxPackage.Resources;
@@ -76,8 +72,8 @@ namespace GloryS.ResxPackage
             if ( null != mcs )
             {
                 // Create the command for the menu item.
-                CommandID menuCommandID = new CommandID(GuidList.GuidResxPackageCmdSet, (int)PkgCmdIdList.ResxPackage);
-                MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID );
+                CommandID menuCommandId = new CommandID(GuidList.GuidResxPackageCmdSet, (int)PkgCmdIdList.ResxPackage);
+                MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandId );
 
                 mcs.AddCommand( menuItem );
             }
@@ -91,7 +87,7 @@ namespace GloryS.ResxPackage
             where TInterface : class
             where TService : class
         {
-            return this.GetService(typeof(TService)) as TInterface;
+            return GetService(typeof(TService)) as TInterface;
         }
 
         private void CreateOutputWindow()
@@ -196,7 +192,7 @@ namespace GloryS.ResxPackage
                 IVsUIShell uiShell = GetService<IVsUIShell, SVsUIShell>();
                 IntPtr parentHwnd = IntPtr.Zero;
 
-                Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(uiShell.GetDialogOwnerHwnd(out parentHwnd));
+                ErrorHandler.ThrowOnFailure(uiShell.GetDialogOwnerHwnd(out parentHwnd));
 
                 var window = new ResxPackageWindow(CreateDialog()) {WindowStartupLocation = WindowStartupLocation.CenterOwner};
 

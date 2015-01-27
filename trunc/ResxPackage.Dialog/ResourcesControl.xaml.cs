@@ -34,7 +34,7 @@ namespace GloryS.ResourcesPackage
         private readonly Action<string, string, DialogIcon> _showDialogAction;
         private readonly List<string> _logMessages;
 
-        private ExcelGenerator _excelGenerator;
+        private readonly ExcelGenerator _excelGenerator;
 
         private OAuth2Parameters _googleOAuth2Parameters;
         private GoogleDocGenerator _googleDocGenerator;

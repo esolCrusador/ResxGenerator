@@ -77,5 +77,14 @@ namespace ResxPackage.Resources {
                 return ResourceManager.GetString("MissingResourcesFormat", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There is not resource files to export.
+        /// </summary>
+        public static string TherIsNotFilesToExport {
+            get {
+                return ResourceManager.GetString("TherIsNotFilesToExport", resourceCulture);
+            }
+        }
     }
 }

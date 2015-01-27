@@ -123,4 +123,7 @@
   <data name="MissingResourcesFormat" xml:space="preserve">
     <value>There are missing resources in project {0}, file {1} culture {2}.</value>
   </data>
+  <data name="TherIsNotFilesToExport" xml:space="preserve">
+    <value>There is not resource files to export</value>
+  </data>
 </root>
