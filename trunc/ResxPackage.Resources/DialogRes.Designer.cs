@@ -61,6 +61,24 @@ namespace ResxPackage.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add selected cultures.
+        /// </summary>
+        public static string AddSelectedCultures {
+            get {
+                return ResourceManager.GetString("AddSelectedCultures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missed resource files will be added for selected cultures..
+        /// </summary>
+        public static string AddSelectedCultures_Tooltip {
+            get {
+                return ResourceManager.GetString("AddSelectedCultures_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cancel.
         /// </summary>
         public static string Cancel {
@@ -106,6 +124,24 @@ namespace ResxPackage.Resources {
         public static string DocumentNotSelected {
             get {
                 return ResourceManager.GetString("DocumentNotSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Embeed sub cultures.
+        /// </summary>
+        public static string EmbeedSubCultures {
+            get {
+                return ResourceManager.GetString("EmbeedSubCultures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If checked than sub cultures like Resources.EN.resx. will be embeeded as subfile to Resources.resx. If unchecked embeeding will be removed..
+        /// </summary>
+        public static string EmbeedSubCultures_Tooltip {
+            get {
+                return ResourceManager.GetString("EmbeedSubCultures_Tooltip", resourceCulture);
             }
         }
         
@@ -269,6 +305,24 @@ namespace ResxPackage.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Remove not selected cultures.
+        /// </summary>
+        public static string RemoveNotSelectedCultures {
+            get {
+                return ResourceManager.GetString("RemoveNotSelectedCultures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not selected culture resource files will be removed during synchronization..
+        /// </summary>
+        public static string RemoveNotSelectedCultures_Tooltip {
+            get {
+                return ResourceManager.GetString("RemoveNotSelectedCultures_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         public static System.Drawing.Bitmap ResxGen {
@@ -297,11 +351,65 @@ namespace ResxPackage.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Synchronize resources content.
+        /// </summary>
+        public static string SyncResourcesContent {
+            get {
+                return ResourceManager.GetString("SyncResourcesContent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resources content for different cultures will be synchronized. It means that resource keys missed in default culture resource will be removed for subcultures and keys missed in subculture will be copied from default culture..
+        /// </summary>
+        public static string SyncResourcesContent_Tooltip {
+            get {
+                return ResourceManager.GetString("SyncResourcesContent_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This command adds new selected cultures files and strings and removes not selected cultures..
         /// </summary>
         public static string SyncResourcesTooltip {
             get {
                 return ResourceManager.GetString("SyncResourcesTooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default content type.
+        /// </summary>
+        public static string UseDefaultContentType {
+            get {
+                return ResourceManager.GetString("UseDefaultContentType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If checked than content type of all culture resources will be changed to &quot;Embedded Resource&quot;. If unchecked content type will be changed to &quot;None&quot;..
+        /// </summary>
+        public static string UseDefaultContentType_Tooltip {
+            get {
+                return ResourceManager.GetString("UseDefaultContentType_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default custom tool.
+        /// </summary>
+        public static string UseDefaultCustomTool {
+            get {
+                return ResourceManager.GetString("UseDefaultCustomTool", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If checked than custom tool property of all neutral resources will be changed to &quot;PublicResXFileCodeGenerator&quot;. If unchecked custom tool property will be seted to empty string..
+        /// </summary>
+        public static string UseDefaultCustomTool_Tooltip {
+            get {
+                return ResourceManager.GetString("UseDefaultCustomTool_Tooltip", resourceCulture);
             }
         }
     }

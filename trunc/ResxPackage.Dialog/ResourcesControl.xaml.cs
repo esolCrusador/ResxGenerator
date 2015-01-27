@@ -14,6 +14,7 @@ using EnvDTE;
 using Google.GData.Client;
 using Google.GData.Spreadsheets;
 using ResourcesAutogenerate;
+using ResourcesAutogenerate.DomainModels;
 using ResxPackage.Dialog;
 using ResxPackage.Dialog.Models;
 using ResxPackage.Resources;
@@ -86,6 +87,7 @@ namespace GloryS.ResourcesPackage
 
             this.ExportToExcelIcon.Source = DialogRes.ExportToExcel.GetImageSource();
             this.ImportFromExcelIcon.Source = DialogRes.ImpotrFromExcel.GetImageSource();
+            this.GenResxSmallIcon.Source = DialogRes.ResxGen.GetImageSource();
 
             this.ExportToGDriveIcon.Source = DialogRes.ExportToGdrive.GetImageSource();
             this.ImportFromGDriveIcon.Source = DialogRes.ImpotrFromGdrive.GetImageSource();
@@ -147,7 +149,7 @@ namespace GloryS.ResourcesPackage
             {
                 _statusProgress.Report(StatusRes.GeneratingResx);
                 ShowOverlay(GenResxIcon);
-                await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, removeFiles: true);
+                await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, ViewModel.SyncOptions.GetOptions());
                 ViewModel.UpdateInitiallySelectedCultures();
 
                 HideOverlay();
@@ -186,7 +188,7 @@ namespace GloryS.ResourcesPackage
                 if (saveFileDialog.ShowDialog() == true)
                 {
                     ShowOverlay(GenResxIcon);
-                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, removeFiles: false);
+                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, new UpdateResourcesOptions{RemoveNotSelectedCultures = false});
                     ViewModel.UpdateInitiallySelectedCultures();
 
                     ShowOverlay(ExportToExcelIcon);
@@ -226,7 +228,7 @@ namespace GloryS.ResourcesPackage
                 if (openFileDialog.ShowDialog() == true)
                 {
                     ShowOverlay(GenResxIcon);
-                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, removeFiles: false);
+                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, new UpdateResourcesOptions{RemoveNotSelectedCultures = false});
                     using (var reader = File.OpenRead(openFileDialog.FileName))
                     {
                         byte[] buffer = new byte[reader.Length];
@@ -357,7 +359,7 @@ namespace GloryS.ResourcesPackage
                 {
                     _statusProgress.Report(StatusRes.GeneratingResx);
                     ShowOverlay(GenResxIcon);
-                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, removeFiles: false);
+                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, new UpdateResourcesOptions{RemoveNotSelectedCultures = false});
                     ViewModel.UpdateInitiallySelectedCultures();
 
                     _statusProgress.Report(StatusRes.ExportToGDrive);
@@ -401,7 +403,7 @@ namespace GloryS.ResourcesPackage
                 {
                     _statusProgress.Report(StatusRes.GeneratingResx);
                     ShowOverlay(GenResxIcon);
-                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, removeFiles: false);
+                    await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, new UpdateResourcesOptions{RemoveNotSelectedCultures = false});
                     ViewModel.UpdateInitiallySelectedCultures();
 
                     _statusProgress.Report(StatusRes.ImportFromGDrive);

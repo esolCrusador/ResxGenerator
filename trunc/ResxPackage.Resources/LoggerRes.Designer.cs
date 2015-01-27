@@ -61,6 +61,15 @@ namespace ResxPackage.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Added new resource {0}.
+        /// </summary>
+        public static string AddedNewResource {
+            get {
+                return ResourceManager.GetString("AddedNewResource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 
         ///.
         /// </summary>

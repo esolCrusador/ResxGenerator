@@ -25,7 +25,7 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <resources:DialogRes x:Key="L" />
     </Control.Resources>
-
+    
     <Grid>
     <Grid Height="Auto" Width="Auto" Margin="10,0,0,0">
         <Grid.RowDefinitions>
@@ -37,8 +37,8 @@
             <RowDefinition Height="2*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MaxWidth="800" />
-            <ColumnDefinition Width="200" />
+            <ColumnDefinition MaxWidth="780" />
+            <ColumnDefinition Width="220" />
         </Grid.ColumnDefinitions>
         
         <ScrollViewer Grid.Column="0" Grid.Row="0" VerticalScrollBarVisibility="Auto">
@@ -79,6 +79,9 @@
         </ScrollViewer>
         <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="6">
             <StackPanel Orientation="Horizontal">
+                <RadioButton GroupName="ExternalSource" IsChecked="{Binding ExternalSource.IsResxSyncSelected}" Margin="10" Height="32" VerticalAlignment="Center">
+                    <Image Name="GenResxSmallIcon"/>
+                </RadioButton>
                 <RadioButton GroupName="ExternalSource" IsChecked="{Binding ExternalSource.IsExcelSelected}" Margin="10" Height="32" VerticalAlignment="Center">
                     <Image Name="ExcelIcon"/>
                 </RadioButton>
@@ -86,14 +89,26 @@
                     <Image Name="GoogleDriveIcon"/>
                 </RadioButton>
             </StackPanel>
+            <StackPanel Visibility="{Binding Path=ExternalSource.IsResxSyncSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Button Name="GenerateButton" HorizontalAlignment="Left" ToolTip="{Binding Path=SyncResourcesTooltip, Source={StaticResource L}}" Click="GenerateButton_Click" >
-                <Image Name="GenResxIcon" />
-            </Button>
+                    <Image Name="GenResxIcon" />
+                </Button>
+                <ItemsControl Margin="15 0 0 0">
+                    <ItemsControl.Items>
+                            <CheckBox IsChecked="True" Content="{Binding Source={StaticResource L}, Path=AddSelectedCultures}" ToolTip="{Binding Source={StaticResource L}, Path=AddSelectedCultures_Tooltip}" IsEnabled="False" ToolTipService.ShowOnDisabled="True"/>
+                            <CheckBox IsChecked="{Binding SyncOptions.RemoveNotSelectedCultures}" Content="{Binding Source={StaticResource L}, Path=RemoveNotSelectedCultures}" ToolTip="{Binding Source={StaticResource L}, Path=RemoveNotSelectedCultures_Tooltip}" IsEnabled="False" ToolTipService.ShowOnDisabled="True" />
+                            <CheckBox IsChecked="True" Content="{Binding Source={StaticResource L}, Path=SyncResourcesContent}" ToolTip="{Binding Source={StaticResource L}, Path=SyncResourcesContent_Tooltip}" IsEnabled="False" ToolTipService.ShowOnDisabled="True" />
+                            <CheckBox IsChecked="{Binding SyncOptions.EmbeedSubCultures}" Content="{Binding Source={StaticResource L}, Path=EmbeedSubCultures}" ToolTip="{Binding Source={StaticResource L}, Path=EmbeedSubCultures_Tooltip}" />
+                            <CheckBox IsChecked="{Binding SyncOptions.UseDefaultContentType}" Content="{Binding Source={StaticResource L}, Path=UseDefaultContentType}" ToolTip="{Binding Source={StaticResource L}, Path=UseDefaultContentType_Tooltip}" />
+                            <CheckBox IsChecked="{Binding SyncOptions.UseDefaultCustomTool}" Content="{Binding Source={StaticResource L}, Path=UseDefaultCustomTool}" ToolTip="{Binding Source={StaticResource L}, Path=UseDefaultCustomTool_Tooltip}" />
+                        </ItemsControl.Items>
+                </ItemsControl>
+            </StackPanel>
             <StackPanel Visibility="{Binding Path=ExternalSource.IsExcelSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Button Name="ExportToExcel" ToolTip="{Binding Path=ExportToExcelTooltip, Source={StaticResource L}}" Click="ExportToExcel_Click">
+                <Button Name="ExportToExcel" ToolTip="{Binding Path=ExportToExcelTooltip, Source={StaticResource L}}" Click="ExportToExcel_Click">
                     <Image Name="ExportToExcelIcon" />
                 </Button>
-                    <Button Name="ImportFromExcel" ToolTip="{Binding Path=ImportFromExcelTooltip, Source={StaticResource L}}" Click="ImportFromExcel_Click">
+                <Button Name="ImportFromExcel" ToolTip="{Binding Path=ImportFromExcelTooltip, Source={StaticResource L}}" Click="ImportFromExcel_Click">
                     <Image Name="ImportFromExcelIcon" />
                 </Button>
             </StackPanel>

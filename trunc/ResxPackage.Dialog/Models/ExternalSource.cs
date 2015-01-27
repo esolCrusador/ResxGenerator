@@ -2,6 +2,7 @@
 {
     public enum ExternalSource
     {
+        Sync,
         Excel,
         GDrive
     }

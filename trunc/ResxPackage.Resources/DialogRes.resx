@@ -200,4 +200,40 @@ Please wait</value>
   <data name="PermissionsRequest" xml:space="preserve">
     <value>Google Sheets access permissions</value>
   </data>
+  <data name="EmbeedSubCultures" xml:space="preserve">
+    <value>Embeed sub cultures</value>
+  </data>
+  <data name="EmbeedSubCultures_Tooltip" xml:space="preserve">
+    <value>If checked than sub cultures like Resources.EN.resx. will be embeeded as subfile to Resources.resx. If unchecked embeeding will be removed.</value>
+  </data>
+  <data name="RemoveNotSelectedCultures" xml:space="preserve">
+    <value>Remove not selected cultures</value>
+  </data>
+  <data name="RemoveNotSelectedCultures_Tooltip" xml:space="preserve">
+    <value>Not selected culture resource files will be removed during synchronization.</value>
+  </data>
+  <data name="UseDefaultCustomTool" xml:space="preserve">
+    <value>Default custom tool</value>
+  </data>
+  <data name="UseDefaultCustomTool_Tooltip" xml:space="preserve">
+    <value>If checked than custom tool property of all neutral resources will be changed to "PublicResXFileCodeGenerator". If unchecked custom tool property will be seted to empty string.</value>
+  </data>
+  <data name="UseDefaultContentType" xml:space="preserve">
+    <value>Default content type</value>
+  </data>
+  <data name="UseDefaultContentType_Tooltip" xml:space="preserve">
+    <value>If checked than content type of all culture resources will be changed to "Embedded Resource". If unchecked content type will be changed to "None".</value>
+  </data>
+  <data name="AddSelectedCultures" xml:space="preserve">
+    <value>Add selected cultures</value>
+  </data>
+  <data name="AddSelectedCultures_Tooltip" xml:space="preserve">
+    <value>Missed resource files will be added for selected cultures.</value>
+  </data>
+  <data name="SyncResourcesContent" xml:space="preserve">
+    <value>Synchronize resources content</value>
+  </data>
+  <data name="SyncResourcesContent_Tooltip" xml:space="preserve">
+    <value>Resources content for different cultures will be synchronized. It means that resource keys missed in default culture resource will be removed for subcultures and keys missed in subculture will be copied from default culture.</value>
+  </data>
 </root>

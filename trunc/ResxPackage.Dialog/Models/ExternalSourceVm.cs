@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using ResxPackage.Dialog.Annotations;
 
@@ -22,8 +21,21 @@ namespace ResxPackage.Dialog.Models
                 _externalSource = value;
                 OnPropertyChanged();
 
+                OnPropertyChanged("IsResxSyncSelected");
                 OnPropertyChanged("IsExcelSelected");
                 OnPropertyChanged("IsGoogleDriveSelected");
+            }
+        }
+
+        public bool IsResxSyncSelected
+        {
+            get { return ExternalSource == ExternalSource.Sync; }
+            set
+            {
+                if (value)
+                {
+                    ExternalSource=ExternalSource.Sync;
+                }
             }
         }
 

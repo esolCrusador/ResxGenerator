@@ -31,9 +31,9 @@ namespace ResourcesAutogenerate
             _logger = logger;
         }
 
-        public Task UpdateResourcesAsync(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken, bool removeFiles = true)
+        public Task UpdateResourcesAsync(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken, UpdateResourcesOptions options)
         {
-            return Task.Run(() => UpdateResources(selectedCultures, selectedProjects, progress, cancellationToken, removeFiles), cancellationToken);
+            return Task.Run(() => UpdateResources(selectedCultures, selectedProjects, progress, cancellationToken, options), cancellationToken);
         }
 
         public async Task ExportToDocumentAsync(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken)
@@ -168,7 +168,7 @@ namespace ResourcesAutogenerate
             }
         }
 
-        public void UpdateResources(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken, bool removeFiles = true)
+        public void UpdateResources(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken, UpdateResourcesOptions options)
         {
             IReadOnlyDictionary<int, CultureInfo> selectedCultureInfos = selectedCultures.Select(CultureInfo.GetCultureInfo)
                 .ToDictionary(cult => cult.LCID, cult => cult);
@@ -224,7 +224,7 @@ namespace ResourcesAutogenerate
 
                     var cultures2Add = selectedCultureInfos.Where(cult => !resourceFileGroup.ContainsKey(cult.Key)).Select(cult => cult.Value).ToList();
 
-                    if (removeFiles)
+                    if (options.RemoveNotSelectedCultures)
                     {
                         foreach (var projectItem in projectItems2Remove)
                         {
@@ -254,12 +254,36 @@ namespace ResourcesAutogenerate
 
                         resourceFileGroup.Add(cultureInfo.LCID, newFile);
 
-                        _logger.Log(String.Format("Added new resource {0}", newFile.ResourcePath));
+                        _logger.Log(String.Format(LoggerRes.AddedNewResource, newFile.ResourcePath));
                     }
 
-                    var otherCultureResources = resourceFileGroup.Where(resData => resData.Key != InvariantCultureId).Select(resData => resData.Value).ToList();
+                    List<ResourceData> otherCultureResources = resourceFileGroup.Where(resData => resData.Key != InvariantCultureId).Select(resData => resData.Value).ToList();
 
-                    UpdateHierarchy(neutralCulture.ProjectItem, otherCultureResources.Select(val => val.ProjectItem).ToList());
+                    if (options.EmbeedSubCultures.HasValue)
+                    {
+                        if (options.EmbeedSubCultures.Value)
+                        {
+                            EmbeedResources(neutralCulture.ProjectItem, otherCultureResources);
+                        }
+                    }
+
+                    if (options.UseDefaultCustomTool.HasValue)
+                    {
+                        Property customToolProperty = neutralCulture.ProjectItem.Properties.Cast<Property>().First(p => p.Name == "CustomTool");
+
+                        customToolProperty.Value = options.UseDefaultCustomTool.Value ? "PublicResXFileCodeGenerator" : "";
+                    }
+
+                    if (options.UseDefaultContentType.HasValue)
+                    {
+                        foreach (var resProjectItem in resourceFileGroup.Values.Select(g=>g.ProjectItem))
+                        {
+                            Property itemTypeProperty = resProjectItem.Properties.Cast<Property>().First(p => p.Name == "ItemType");
+
+                            itemTypeProperty.Value = options.UseDefaultContentType.Value ? "EmbeddedResource" : "None";
+                        }
+                    }
+
                     UpdateResourceFiles(neutralCulture, otherCultureResources);
 
                     project.Save();
@@ -343,15 +367,14 @@ namespace ResourcesAutogenerate
             }
         }
 
-        private void UpdateHierarchy(ProjectItem neutralResItem, IReadOnlyCollection<ProjectItem> resItems)
+        private void EmbeedResources(ProjectItem neutralResItem, IReadOnlyCollection<ResourceData> resItems)
         {
-            foreach (var projectItem in resItems.Except(neutralResItem.ProjectItems.Cast<ProjectItem>()).ToList())
+            foreach (var resItem in resItems.Where(res=>res.ProjectItem.Collection.Parent!= neutralResItem).ToList())
             {
-                projectItem.Remove();
-                neutralResItem.ProjectItems.AddFromFile(projectItem.FileNames[0]);
+                resItem.ProjectItem.Remove();
+                resItem.ProjectItem = neutralResItem.ProjectItems.AddFromFile(resItem.ProjectItem.FileNames[0]);
             }
         }
-
 
         private Dictionary<string, ResXDataNode> GetResourceContent(string fileName)
         {

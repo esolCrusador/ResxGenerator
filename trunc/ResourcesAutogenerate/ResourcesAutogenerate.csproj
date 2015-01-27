@@ -83,6 +83,7 @@
     <Compile Include="DomainModels\ResourceEntryData.cs" />
     <Compile Include="DomainModels\SolutionResources.cs" />
     <Compile Include="DomainModels\StringResxNode.cs" />
+    <Compile Include="DomainModels\UpdateResourcesOptions.cs" />
     <Compile Include="DTEProjectExtensions.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="IResourceMerge.cs" />

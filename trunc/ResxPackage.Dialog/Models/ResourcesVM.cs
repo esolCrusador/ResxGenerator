@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using EnvDTE;
+using ResourcesAutogenerate.DomainModels;
 
 namespace ResxPackage.Dialog.Models
 {
@@ -18,8 +19,10 @@ namespace ResxPackage.Dialog.Models
             SelectedCulturesList = new ObservableCollection<CultureSelectItem>(cultures.Where(cul => cul.IsSelected));
 
             SolutionName = solutionName;
+
+            SyncOptions = new UpdateResourcesOptionsVm();
             
-            ExternalSource = new ExternalSourceVm(Models.ExternalSource.Excel);
+            ExternalSource = new ExternalSourceVm(Models.ExternalSource.Sync);
         }
 
         #region Observable
@@ -29,6 +32,8 @@ namespace ResxPackage.Dialog.Models
         public ObservableCollection<CultureSelectItem> SelectedCulturesList { get; set; }
 
         public ObservableCollection<ProjectSelectItem> ProjectsList { get; set; }
+
+        public UpdateResourcesOptionsVm SyncOptions { get; set; }
 
         #endregion
 
