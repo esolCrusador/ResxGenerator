@@ -23,7 +23,7 @@ namespace ResxPackage.Dialog.Models
 
                 OnPropertyChanged("IsResxSyncSelected");
                 OnPropertyChanged("IsExcelSelected");
-                OnPropertyChanged("IsGoogleDriveSelected");
+                OnPropertyChanged("IsGoogleSheetsSelected");
             }
         }
 
@@ -51,14 +51,14 @@ namespace ResxPackage.Dialog.Models
             }
         }
 
-        public bool IsGoogleDriveSelected
+        public bool IsGoogleSheetsSelected
         {
-            get { return ExternalSource == ExternalSource.GDrive; }
+            get { return ExternalSource == ExternalSource.GSheets; }
             set
             {
                 if (value)
                 {
-                    ExternalSource = ExternalSource.GDrive;
+                    ExternalSource = ExternalSource.GSheets;
                 }
             }
         }

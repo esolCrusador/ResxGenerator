@@ -45,15 +45,33 @@ namespace Common.Excel.GoogleSheets
 
         #region Async Batch
 
-        public static Task<TFeed> BatchFeedAsync<TFeed>(this SpreadsheetsService service, TFeed feed, IAggregateProgress progress = null, CancellationToken cancellationToken = default (CancellationToken))
-            where TFeed: AtomFeed
+        public static async Task<TFeed> BatchFeedAsync<TFeed>(this SpreadsheetsService service, TFeed feed, int attempts, IAggregateProgress progress = null, CancellationToken cancellationToken = default (CancellationToken))
+            where TFeed : AtomFeed
         {
-            var userData = new object();
+            try
+            {
+                var userData = new object();
 
-           
-            service.BatchAsync(feed, new Uri(feed.Batch), userData);
+                service.BatchAsync(feed, new Uri(feed.Batch), userData);
 
-            return QueryFeedAsync<TFeed>(service, userData, progress, cancellationToken);
+                return await QueryFeedAsync<TFeed>(service, userData, progress, cancellationToken);
+            }
+            catch (TimeoutException)
+            {
+                //Retrying if timeout.
+                attempts--;
+
+                if (attempts > 0)
+                {
+                    //Then retry.
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return await BatchFeedAsync(service, feed, attempts, progress, cancellationToken);
         }
 
         #endregion

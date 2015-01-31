@@ -88,11 +88,11 @@ namespace ResxPackage.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Exporting to google drive....
+        ///   Looks up a localized string similar to Exporting to google sheets....
         /// </summary>
-        public static string ExportToGDrive {
+        public static string ExportToGSheets {
             get {
-                return ResourceManager.GetString("ExportToGDrive", resourceCulture);
+                return ResourceManager.GetString("ExportToGSheets", resourceCulture);
             }
         }
         
@@ -142,11 +142,11 @@ namespace ResxPackage.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Importing from google drive....
+        ///   Looks up a localized string similar to Importing from google sheets....
         /// </summary>
-        public static string ImportFromGDrive {
+        public static string ImportFromGSheets {
             get {
-                return ResourceManager.GetString("ImportFromGDrive", resourceCulture);
+                return ResourceManager.GetString("ImportFromGSheets", resourceCulture);
             }
         }
         

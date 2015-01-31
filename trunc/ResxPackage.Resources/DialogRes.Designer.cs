@@ -156,6 +156,15 @@ namespace ResxPackage.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Export/import to/from excel file..
+        /// </summary>
+        public static string ExcelTooltip {
+            get {
+                return ResourceManager.GetString("ExcelTooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exception.
         /// </summary>
         public static string Exception {
@@ -186,19 +195,19 @@ namespace ResxPackage.Resources {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap ExportToGdrive {
+        public static System.Drawing.Bitmap ExportToGSheets {
             get {
-                object obj = ResourceManager.GetObject("ExportToGdrive", resourceCulture);
+                object obj = ResourceManager.GetObject("ExportToGSheets", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Exports resources data to google drive document..
+        ///   Looks up a localized string similar to Exports resources data to google sheets document..
         /// </summary>
-        public static string ExportToGDriveTooltip {
+        public static string ExportToGSheetsTooltip {
             get {
-                return ResourceManager.GetString("ExportToGDriveTooltip", resourceCulture);
+                return ResourceManager.GetString("ExportToGSheetsTooltip", resourceCulture);
             }
         }
         
@@ -214,10 +223,19 @@ namespace ResxPackage.Resources {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap Gdrive {
+        public static System.Drawing.Bitmap GSheets {
             get {
-                object obj = ResourceManager.GetObject("Gdrive", resourceCulture);
+                object obj = ResourceManager.GetObject("GSheets", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export/import to/from google sheets..
+        /// </summary>
+        public static string GSheetsTooltip {
+            get {
+                return ResourceManager.GetString("GSheetsTooltip", resourceCulture);
             }
         }
         
@@ -231,11 +249,11 @@ namespace ResxPackage.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Imports updated resources data from google drive document..
+        ///   Looks up a localized string similar to Imports updated resources data from google sheets document..
         /// </summary>
-        public static string ImportFromGDriveTooltip {
+        public static string ImportFromGSheetsTooltip {
             get {
-                return ResourceManager.GetString("ImportFromGDriveTooltip", resourceCulture);
+                return ResourceManager.GetString("ImportFromGSheetsTooltip", resourceCulture);
             }
         }
         
@@ -252,9 +270,9 @@ namespace ResxPackage.Resources {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap ImpotrFromGdrive {
+        public static System.Drawing.Bitmap ImpotrFromGSheets {
             get {
-                object obj = ResourceManager.GetObject("ImpotrFromGdrive", resourceCulture);
+                object obj = ResourceManager.GetObject("ImpotrFromGSheets", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -329,6 +347,15 @@ namespace ResxPackage.Resources {
             get {
                 object obj = ResourceManager.GetObject("ResxGen", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Synchronize resources..
+        /// </summary>
+        public static string ResxSyncTooltip {
+            get {
+                return ResourceManager.GetString("ResxSyncTooltip", resourceCulture);
             }
         }
         

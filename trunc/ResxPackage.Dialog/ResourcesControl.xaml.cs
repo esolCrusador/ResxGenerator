@@ -89,11 +89,11 @@ namespace GloryS.ResourcesPackage
             this.ImportFromExcelIcon.Source = DialogRes.ImpotrFromExcel.GetImageSource();
             this.GenResxSmallIcon.Source = DialogRes.ResxGen.GetImageSource();
 
-            this.ExportToGDriveIcon.Source = DialogRes.ExportToGdrive.GetImageSource();
-            this.ImportFromGDriveIcon.Source = DialogRes.ImpotrFromGdrive.GetImageSource();
+            this.ExportToGSheetsIcon.Source = DialogRes.ExportToGSheets.GetImageSource();
+            this.ImportFromGSheetsIcon.Source = DialogRes.ImpotrFromGSheets.GetImageSource();
 
             this.ExcelIcon.Source = DialogRes.Excel.GetImageSource();
-            this.GoogleDriveIcon.Source = DialogRes.Gdrive.GetImageSource();
+            this.GoogleSheetsIcon.Source = DialogRes.GSheets.GetImageSource();
         }
 
         private void InitializeData(Solution solution)
@@ -348,7 +348,7 @@ namespace GloryS.ResourcesPackage
             return dialogResult;
         }
 
-        private async void ExportToGDrive_Click(object sender, RoutedEventArgs e)
+        private async void ExportToGSheets_Click(object sender, RoutedEventArgs e)
         {
             string documentPath = null;
             string documentPublicUrl = null;
@@ -362,8 +362,8 @@ namespace GloryS.ResourcesPackage
                     await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, new UpdateResourcesOptions{RemoveNotSelectedCultures = false});
                     ViewModel.UpdateInitiallySelectedCultures();
 
-                    _statusProgress.Report(StatusRes.ExportToGDrive);
-                    ShowOverlay(ExportToGDriveIcon);
+                    _statusProgress.Report(StatusRes.ExportToGSheets);
+                    ShowOverlay(ExportToGSheetsIcon);
                     await _resourceMerge.ExportToDocumentAsync(_googleDocGenerator, documentPath, ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token);
 
                     HideOverlay();
@@ -390,7 +390,7 @@ namespace GloryS.ResourcesPackage
             _cancellationTokenSource = new CancellationTokenSource();
         }
 
-        private async void ImportFromGDrive_Click(object sender, RoutedEventArgs e)
+        private async void ImportFromGSheets_Click(object sender, RoutedEventArgs e)
         {
             string documentPath = null;
 
@@ -406,8 +406,8 @@ namespace GloryS.ResourcesPackage
                     await _resourceMerge.UpdateResourcesAsync(ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token, new UpdateResourcesOptions{RemoveNotSelectedCultures = false});
                     ViewModel.UpdateInitiallySelectedCultures();
 
-                    _statusProgress.Report(StatusRes.ImportFromGDrive);
-                    ShowOverlay(ImportFromGDriveIcon);
+                    _statusProgress.Report(StatusRes.ImportFromGSheets);
+                    ShowOverlay(ImportFromGSheetsIcon);
                     await _resourceMerge.ImportFromDocumentAsync(_googleDocGenerator, documentPath, ViewModel.SelectedCultures, ViewModel.SelectedProjects, _statusProgress, _cancellationTokenSource.Token);
 
                     HideOverlay();

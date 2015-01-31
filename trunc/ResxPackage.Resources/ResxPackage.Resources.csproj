@@ -28,6 +28,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -105,6 +106,7 @@
     <EmbeddedResource Include="PackageRes.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>PackageRes.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="StatusRes.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -126,16 +128,19 @@
     <None Include="Resources\resxgenicon.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ExportToGdrive.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ImpotrFromGdrive.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Excel.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Gdrive.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ExportToGSheets.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\GSheets.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImpotrFromGSheets.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

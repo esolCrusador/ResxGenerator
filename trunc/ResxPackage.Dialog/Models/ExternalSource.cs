@@ -4,6 +4,6 @@
     {
         Sync,
         Excel,
-        GDrive
+        GSheets
     }
 }

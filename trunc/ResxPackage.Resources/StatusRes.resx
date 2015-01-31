@@ -126,8 +126,8 @@
   <data name="ExportingToExcel" xml:space="preserve">
     <value>Exporting to excel...</value>
   </data>
-  <data name="ExportToGDrive" xml:space="preserve">
-    <value>Exporting to google drive...</value>
+  <data name="ExportToGSheets" xml:space="preserve">
+    <value>Exporting to google sheets...</value>
   </data>
   <data name="GeneratingResx" xml:space="preserve">
     <value>Generating resource files...</value>
@@ -159,8 +159,8 @@
   <data name="UpdatingCells" xml:space="preserve">
     <value>Updating cells...</value>
   </data>
-  <data name="ImportFromGDrive" xml:space="preserve">
-    <value>Importing from google drive...</value>
+  <data name="ImportFromGSheets" xml:space="preserve">
+    <value>Importing from google sheets...</value>
   </data>
   <data name="GettingWorksheetsData" xml:space="preserve">
     <value>Getting worksheets data...</value>

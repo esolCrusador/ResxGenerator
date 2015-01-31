@@ -133,29 +133,20 @@
   <data name="ExportToExcelTooltip" xml:space="preserve">
     <value>Exports resources data to excel file. Please save excel file format!</value>
   </data>
-  <data name="ExportToGdrive" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\ExportToGdrive.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="ExportToGDriveTooltip" xml:space="preserve">
-    <value>Exports resources data to google drive document.</value>
+  <data name="ExportToGSheetsTooltip" xml:space="preserve">
+    <value>Exports resources data to google sheets document.</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Filter</value>
   </data>
-  <data name="Gdrive" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\Gdrive.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="ImportFromExcelTooltip" xml:space="preserve">
     <value>Imports updated resources data from excel file.</value>
   </data>
-  <data name="ImportFromGDriveTooltip" xml:space="preserve">
-    <value>Imports updated resources data from google drive document.</value>
+  <data name="ImportFromGSheetsTooltip" xml:space="preserve">
+    <value>Imports updated resources data from google sheets document.</value>
   </data>
   <data name="ImpotrFromExcel" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\ImpotrFromExcel.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="ImpotrFromGdrive" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\ImpotrFromGdrive.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ResxGen" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\ResxGen.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -235,5 +226,23 @@ Please wait</value>
   </data>
   <data name="SyncResourcesContent_Tooltip" xml:space="preserve">
     <value>Resources content for different cultures will be synchronized. It means that resource keys missed in default culture resource will be removed for subcultures and keys missed in subculture will be copied from default culture.</value>
+  </data>
+  <data name="ExportToGSheets" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\ExportToGSheets.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GSheets" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\GSheets.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ImpotrFromGSheets" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\ImpotrFromGSheets.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ExcelTooltip" xml:space="preserve">
+    <value>Export/import to/from excel file.</value>
+  </data>
+  <data name="GSheetsTooltip" xml:space="preserve">
+    <value>Export/import to/from google sheets.</value>
+  </data>
+  <data name="ResxSyncTooltip" xml:space="preserve">
+    <value>Synchronize resources.</value>
   </data>
 </root>

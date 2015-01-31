@@ -4,14 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:resources="clr-namespace:ResxPackage.Resources;assembly=ResxPackage.Resources"
-             Background="{DynamicResource VsBrush.Window}"
-             Foreground="{DynamicResource VsBrush.WindowText}"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="800"
              Height="Auto"
              Width="Auto"
              Name="ResxGenerateControl">
-
     <Control.Resources>
         <Style TargetType="Button">
             <Setter Property="Height" Value="{Binding RelativeSource={RelativeSource TemplatedParent} }" />
@@ -25,7 +22,6 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <resources:DialogRes x:Key="L" />
     </Control.Resources>
-    
     <Grid>
     <Grid Height="Auto" Width="Auto" Margin="10,0,0,0">
         <Grid.RowDefinitions>
@@ -37,7 +33,7 @@
             <RowDefinition Height="2*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MaxWidth="780" />
+            <ColumnDefinition MinWidth="240" Width="*" />
             <ColumnDefinition Width="220" />
         </Grid.ColumnDefinitions>
         
@@ -79,14 +75,14 @@
         </ScrollViewer>
         <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="6">
             <StackPanel Orientation="Horizontal">
-                <RadioButton GroupName="ExternalSource" IsChecked="{Binding ExternalSource.IsResxSyncSelected}" Margin="10" Height="32" VerticalAlignment="Center">
+                <RadioButton GroupName="ExternalSource" IsChecked="{Binding ExternalSource.IsResxSyncSelected}" Margin="10" Height="32" VerticalAlignment="Center" ToolTip="{Binding Source={StaticResource L}, Path=ResxSyncTooltip}">
                     <Image Name="GenResxSmallIcon"/>
                 </RadioButton>
-                <RadioButton GroupName="ExternalSource" IsChecked="{Binding ExternalSource.IsExcelSelected}" Margin="10" Height="32" VerticalAlignment="Center">
+                <RadioButton GroupName="ExternalSource" IsChecked="{Binding ExternalSource.IsExcelSelected}" Margin="10" Height="32" VerticalAlignment="Center" ToolTip="{Binding Source={StaticResource L}, Path=ExcelTooltip}">
                     <Image Name="ExcelIcon"/>
                 </RadioButton>
-                <RadioButton GroupName="ExternalSource" IsChecked="{Binding ExternalSource.IsGoogleDriveSelected}" VerticalAlignment="Center" Margin="10" Height="32">
-                    <Image Name="GoogleDriveIcon"/>
+                <RadioButton GroupName="ExternalSource" IsChecked="{Binding ExternalSource.IsGoogleSheetsSelected}" VerticalAlignment="Center" Margin="10" Height="32" ToolTip="{Binding Source={StaticResource L}, Path=GSheetsTooltip}">
+                    <Image Name="GoogleSheetsIcon"/>
                 </RadioButton>
             </StackPanel>
             <StackPanel Visibility="{Binding Path=ExternalSource.IsResxSyncSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -112,12 +108,12 @@
                     <Image Name="ImportFromExcelIcon" />
                 </Button>
             </StackPanel>
-                <StackPanel Visibility="{Binding Path=ExternalSource.IsGoogleDriveSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Button Name="ExportToGDrive" ToolTip="{Binding Path=ExportToGDriveTooltip, Source={StaticResource L}}" Click="ExportToGDrive_Click">
-                    <Image Name="ExportToGDriveIcon" />
+                <StackPanel Visibility="{Binding Path=ExternalSource.IsGoogleSheetsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Button Name="ExportToGSheets" ToolTip="{Binding Path=ExportToGSheetsTooltip, Source={StaticResource L}}" Click="ExportToGSheets_Click">
+                    <Image Name="ExportToGSheetsIcon" />
                 </Button>
-                    <Button Name="ImportFromGDrive" ToolTip="{Binding Path=ImportFromGDriveTooltip, Source={StaticResource L}}" Click="ImportFromGDrive_Click">
-                    <Image Name="ImportFromGDriveIcon" />
+                    <Button Name="ImportFromGSheets" ToolTip="{Binding Path=ImportFromGSheetsTooltip, Source={StaticResource L}}" Click="ImportFromGSheets_Click">
+                    <Image Name="ImportFromGSheetsIcon" />
                 </Button>
             </StackPanel>
         </StackPanel>

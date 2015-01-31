@@ -16,6 +16,7 @@ namespace Common.Excel.Implementation
     {
         public readonly SpreadsheetsService Service;
         private const int MaxPushRequestsCount = 5;
+        private const int TimeOutAttemptsCount = 3;
         private const int MaxBatchSize = 1000;
         private const int MaxReadBatchSize = 5000;
 
@@ -102,7 +103,7 @@ namespace Common.Excel.Implementation
 
                     try
                     {
-                        return await Service.BatchFeedAsync(mappingFeed, p, cancellationToken);
+                        return await Service.BatchFeedAsync(mappingFeed, TimeOutAttemptsCount, p, cancellationToken);
                     }
                     finally
                     {
@@ -128,7 +129,7 @@ namespace Common.Excel.Implementation
 
                 try
                 {
-                    return await Service.BatchFeedAsync(updateFeed, p, cancellationToken);
+                    return await Service.BatchFeedAsync(updateFeed, TimeOutAttemptsCount, p, cancellationToken);
                 }
                 finally
                 {

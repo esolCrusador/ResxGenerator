@@ -19,10 +19,12 @@ namespace GloryS.ResxPackage
             this.Width = 800;
             this.Height = 600;
 
-            this.MinWidth = 400;
-            this.MinHeight = 300;
+            this.MinWidth = 500;
+            this.MinHeight = 350;
 
             this.Content = control;
+
+            this.UpdateDefaultStyle();
 
             this.Icon = PackageRes.ResxGenIcon.GetImageSource();
             this.Title = PackageRes.Title;

@@ -217,9 +217,7 @@ namespace ResourcesAutogenerate
                     }
                     else
                     {
-                        projectItems2Remove = items2Remove
-                            .Join(projectResources.ResourceProjectItems, f => f.Value.ResourcePath, item => item.FileNames[0], (f, item) => new KeyValuePair<int, ProjectItem>(f.Key, item))
-                            .ToList();
+                        projectItems2Remove = items2Remove.Select(d=> new KeyValuePair<int, ProjectItem>(d.Key, d.Value.ProjectItem)).ToList();
                     }
 
                     var cultures2Add = selectedCultureInfos.Where(cult => !resourceFileGroup.ContainsKey(cult.Key)).Select(cult => cult.Value).ToList();
