@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:resources="clr-namespace:ResxPackage.Resources;assembly=ResxPackage.Resources"
+             xmlns:dialog="clr-namespace:ResxPackage.Dialog"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="800"
              Height="Auto"
@@ -20,17 +21,17 @@
             <Setter Property="Margin" Value="15"/>
         </Style>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <dialog:QuoterConverter x:Key="QuoterConverter" />
         <resources:DialogRes x:Key="L" />
     </Control.Resources>
     <Grid>
     <Grid Height="Auto" Width="Auto" Margin="10,0,0,0">
         <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="2*" />
+            <RowDefinition Height="3*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition MinWidth="240" Width="*" />
@@ -51,7 +52,7 @@
 
             <Label Grid.Row="1" Grid.Column="0" Content="{Binding Path=Cultures, Source={StaticResource L}}"/>
 
-            <ScrollViewer Grid.Column="0" Grid.Row="3">
+            <ScrollViewer Grid.Column="0" Grid.Row="2" VerticalScrollBarVisibility="Auto" MaxHeight="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}, Path=ActualHeight, Converter={StaticResource QuoterConverter}}" >
                 <ItemsControl Name="SelectedCulturesListBox" ItemsSource="{Binding SelectedCulturesList}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -60,11 +61,11 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             </ScrollViewer>
-        <DockPanel Grid.Column="0" Grid.Row="4">
+        <DockPanel Grid.Column="0" Grid.Row="3">
                 <Label Content="{Binding Path=Filter, Source={StaticResource L}}" />
             <TextBox Name="FilterCultures" TextChanged="FilterCultures_OnTextChanged"></TextBox>
         </DockPanel>
-        <ScrollViewer  Grid.Column="0" Grid.Row="5">
+        <ScrollViewer  Grid.Column="0" Grid.Row="4">
             <ItemsControl Name="CulturesListBox" ItemsSource="{Binding CulturesList}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -73,7 +74,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
-        <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="6">
+        <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="5">
             <StackPanel Orientation="Horizontal">
                 <RadioButton GroupName="ExternalSource" IsChecked="{Binding ExternalSource.IsResxSyncSelected}" Margin="10" Height="32" VerticalAlignment="Center" ToolTip="{Binding Source={StaticResource L}, Path=ResxSyncTooltip}">
                     <Image Name="GenResxSmallIcon"/>

@@ -103,6 +103,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="QuoterConverter.cs" />
     <Compile Include="ResourcesControl.xaml.cs">
       <DependentUpon>ResourcesControl.xaml</DependentUpon>
     </Compile>
