@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Resources;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms.VisualStyles;
 using Common.Excel;
 using Common.Excel.Contracts;
 using Common.Excel.Models;
-using DocumentFormat.OpenXml.Office2013.PowerPoint.Roaming;
 using EnvDTE;
 using ResourcesAutogenerate.DomainModels;
 using ResxPackage.Resources;

@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="fa894511-2da4-4287-b8ef-f0befadb13ed" Version="1.2.1" Language="en-US" Publisher="esolCrusador" />
-    <DisplayName>Resx Sync</DisplayName>
+    <Identity Id="0E6CC049-E4CB-41F3-B5FE-CE60E68BC549" Version="1.2.1" Language="en-US" Publisher="esolCrusador" />
+    <DisplayName>Resx</DisplayName>
     <Description xml:space="preserve">Project "Resx Sync" is created to add ability to developers automatically synchronise *.resx files of different cultures based on default culture and to export/import project resources to/from *.xlsx files.</Description>
     <MoreInfo>https://github.com/esolCrusador/ResxGenerator</MoreInfo>
     <License>Resources\License.txt</License>
