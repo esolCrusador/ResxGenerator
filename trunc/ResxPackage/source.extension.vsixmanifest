@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="0E6CC049-E4CB-41F3-B5FE-CE60E68BC549" Version="1.2.1" Language="en-US" Publisher="esolCrusador" />
+    <Identity Id="0E6CC049-E4CB-41F3-B5FE-CE60E68BC549" Version="1.2.2" Language="en-US" Publisher="esolCrusador" />
     <DisplayName>Resx</DisplayName>
     <Description xml:space="preserve">Project "Resx Sync" is created to add ability to developers automatically synchronise *.resx files of different cultures based on default culture and to export/import project resources to/from *.xlsx files.</Description>
     <MoreInfo>https://github.com/esolCrusador/ResxGenerator</MoreInfo>
@@ -18,7 +18,7 @@
     <InstallationTarget Version="14.0" Id="Microsoft.VisualStudio.Pro" />
   </Installation>
   <Dependencies>
-    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="4.5" />
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.0, 4.6]" />
     <Dependency Id="Microsoft.VisualStudio.MPF.11.0" DisplayName="Visual Studio MPF 11.0" d:Source="Installed" Version="11.0" />
   </Dependencies>
   <Assets>

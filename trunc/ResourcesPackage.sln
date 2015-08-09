@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourcesAutogenerate", "ResourcesAutogenerate\ResourcesAutogenerate.csproj", "{839ADE17-6037-4C43-B36E-12EF0806D2BF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Excel", "Common.Excel\Common.Excel.csproj", "{97FF0588-FD74-47C8-BA25-F24A9ADFAA73}"
