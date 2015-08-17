@@ -41,8 +41,8 @@
     <DefineConstants>TRACE;DEBUG</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DocumentFormat.OpenXml">
-      <HintPath>..\packages\DocumentFormat.OpenXml.2.5\lib\DocumentFormat.OpenXml.dll</HintPath>
+    <Reference Include="EPPlus">
+      <HintPath>..\packages\EPPlus.4.0.4\lib\net20\EPPlus.dll</HintPath>
     </Reference>
     <Reference Include="Google.GData.Client">
       <HintPath>..\packages\Google.GData.Client.2.2.0.0\lib\Google.GData.Client.dll</HintPath>
@@ -70,11 +70,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Contracts\IGoogleDocumentsService.cs" />
-    <Compile Include="Excel\ExcelExtensions.cs" />
     <Compile Include="GoogleSheets\AtomEntryExtensions.cs" />
     <Compile Include="GoogleSheets\SpreadSheetServiceExtensions.cs" />
     <Compile Include="Implementation\ExcelGenerator.cs" />
-    <Compile Include="Excel\Excel.cs" />
     <Compile Include="Contracts\IDocumentGenerator.cs" />
     <Compile Include="Implementation\GoogleDocGenerator.cs" />
     <Compile Include="Models\CellModel.cs" />
@@ -101,6 +99,7 @@
       <Name>ResxPackage.Resources</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

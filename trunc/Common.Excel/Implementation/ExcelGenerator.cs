@@ -1,29 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Common.Excel.Contracts;
 using Common.Excel.Models;
-using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Spreadsheet;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using ResxPackage.Resources;
 
 namespace Common.Excel.Implementation
 {
     public class ExcelGenerator : IDocumentGenerator
     {
-        //For Excel2007 and above .xlsx files
-
         public Task ExportToDocumentAsync<TModel>(string path, IReadOnlyList<ResGroupModel<TModel>> groups, IStatusProgress progress, CancellationToken cancellationToken) where TModel : IRowModel
         {
-            return Task.Run(()=> ExportToDocument(path, groups, progress, cancellationToken), cancellationToken);
+            return Task.Run(()=>ExportToDocument(path, groups, progress, cancellationToken), cancellationToken);
         }
 
         public Task<IReadOnlyList<ResGroupModel<TModel>>> ImportFromDocumentAsync<TModel>(string path, IStatusProgress progress, CancellationToken cancellationToken) where TModel : IRowModel, new()
         {
-            return Task.Run(() => ImportFromExcel<TModel>(path), cancellationToken);
+            return Task.Run(()=>ImportFromDocument<TModel>(path), cancellationToken);
         }
 
         private void ExportToDocument<TModel>(string path, IReadOnlyList<ResGroupModel<TModel>> groups, IStatusProgress progress, CancellationToken cancellationToken) where TModel : IRowModel
@@ -35,27 +35,22 @@ namespace Common.Excel.Implementation
 
             progress.Report(StatusRes.ExportingToExcel);
 
-            using (var stream = new MemoryStream())
+            using (ExcelPackage package = new ExcelPackage())
             {
                 /* Create the worksheet. */
-                SpreadsheetDocument spreadsheet = Excel.CreateWorkbook(stream);
-                Excel.AddBasicStyles(spreadsheet);
-                Excel.AddAdditionalStyles(spreadsheet);
+                var workbook = package.Workbook;
 
                 double totalRows = groups.Sum(g => g.Tables.Sum(t => t.Rows.Count));
                 int rowIndexReport = 1;
 
-                for (int projectIndex = 0; projectIndex < groups.Count; projectIndex++)
+                foreach (var group in groups)
                 {
-                    var @group = groups[projectIndex];
-                    Excel.AddWorksheet(spreadsheet, @group.GroupTitle);
-                    Worksheet worksheet = spreadsheet.WorkbookPart.WorksheetParts.ElementAt(projectIndex).Worksheet;
+                    var worksheet = workbook.Worksheets.Add(group.GroupTitle);
+                    ExcelStyle defaultStyle = worksheet.Cells[1, 1].Style;
 
-
-                    uint rowIndex = 1;
+                    int rowIndex = 1;
 
                     int columnsCount = groups.SelectMany(g => g.Tables.Select(t => t.Header.Columns.Count)).Max();
-                    List<int> columnWidthes = new List<int>(columnsCount);
 
                     for (int i = 0; i < columnsCount; i++)
                     {
@@ -74,24 +69,31 @@ namespace Common.Excel.Implementation
                         int longestStringLength = groupStrings.Max(s => s.Length);
                         string longestString = groupStrings.Find(str => str.Length == longestStringLength);
 
-                        columnWidthes.Add((int) Excel.GetDefaultFontWidth(longestString));
+                        worksheet.Column(i + 1).Width = (int)GetDefaultFontWidth(defaultStyle, longestString);
                     }
 
                     //Setting Columns
-                    foreach (var resTableModel in @group.Tables)
+                    foreach (var resTableModel in group.Tables)
                     {
-                        Excel.SetColumnHeadingValue(spreadsheet, worksheet, 1, rowIndex++, resTableModel.TableTitle, false, false);
-                        Excel.SetCellValue(spreadsheet, worksheet, 1, rowIndex++, " ", false, false);
+                        var headerCell = worksheet.Cells[rowIndex++, 1];
+
+                        headerCell.Style.Font.Bold = true;
+                        headerCell.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        headerCell.Style.Fill.BackgroundColor.SetColor(Color.LightGray);
+
+                        headerCell.Value = resTableModel.TableTitle;
+
+                        rowIndex++;
 
                         for (int columnIndex = 0; columnIndex < resTableModel.Header.Columns.Count; columnIndex++)
                         {
-                            Excel.SetColumnHeadingValue(spreadsheet, worksheet, (uint) columnIndex + 1, rowIndex, resTableModel.Header.Columns[columnIndex].Title, false, false);
+                            var languageHeader = worksheet.Cells[rowIndex, columnIndex + 1];
 
-                            var width = columnWidthes[columnIndex];
-                            if (width > 0)
-                            {
-                                Excel.SetColumnWidth(worksheet, columnIndex + 1, width);
-                            }
+                            languageHeader.Style.Font.Bold = true;
+                            languageHeader.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            languageHeader.Style.Fill.BackgroundColor.SetColor(Color.LightGray);
+
+                            languageHeader.Value = resTableModel.Header.Columns[columnIndex].Title;
                         }
 
                         rowIndex++;
@@ -102,7 +104,13 @@ namespace Common.Excel.Implementation
                             {
                                 var cell = tableRow.DataList[columnIndex];
 
-                                Excel.SetCellValue(spreadsheet, worksheet, (uint) columnIndex + 1, rowIndex, cell.DataString, false, false, highlight: cell.Hilight);
+                                var valueCell = worksheet.Cells[rowIndex, columnIndex + 1];
+                                valueCell.Value = cell.DataString;
+
+                                if (cell.Hilight)
+                                {
+                                    valueCell.Style.Font.Color.SetColor(Color.Red);
+                                }
                             }
 
                             rowIndex++;
@@ -113,100 +121,62 @@ namespace Common.Excel.Implementation
                         progress.Report(100 * rowIndexReport / totalRows);
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        Excel.SetCellValue(spreadsheet, worksheet, 1, rowIndex++, " ", false, false);
+                        rowIndex++;
                     }
-
-                    worksheet.Save();
                 }
 
-                spreadsheet.Close();
-
-                if (File.Exists(path))
-                {
-                    File.Delete(path);
-                }
-
-                using (FileStream fileStream = File.Create(path))
-                {
-                    fileStream.Write(stream.ToArray(), 0, (int)stream.Length);
-                }
+                package.SaveAs(new FileInfo(path));
             }
         }
 
-        public IReadOnlyList<ResGroupModel<TModel>> ImportFromExcel<TModel>(string path) where TModel : IRowModel, new()
+        private IReadOnlyList<ResGroupModel<TModel>> ImportFromDocument<TModel>(string path) where TModel : IRowModel, new()
         {
-            using (FileStream stream =  File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (ExcelPackage package = new ExcelPackage(new FileInfo(path)))
             {
-                SpreadsheetDocument spreadsheet = SpreadsheetDocument.Open(stream, false);
-                WorkbookPart workbookPart = spreadsheet.WorkbookPart;
+                var workbook = package.Workbook;
 
                 var dataList = new List<ResGroupModel<TModel>>();
 
-                for (int projectIndex = 0; projectIndex < workbookPart.WorksheetParts.Count(); projectIndex++)
+                foreach (ExcelWorksheet worksheetPart in workbook.Worksheets)
                 {
-                    WorksheetPart worksheetPart = workbookPart.WorksheetParts.ElementAt(projectIndex);
-                    SheetData sheetData = worksheetPart.Worksheet.Elements<SheetData>().First();
-
-                    var itemGetter = GetSharedStringItemById(workbookPart);
-
-                    List<List<string>> data = sheetData.Cast<Row>()
-                        .Select(row => row.ChildElements.Cast<Cell>()
-                            .Select(cell => cell.CellValue != null ? itemGetter(cell.CellValue.Text) : null)
-                            .ToList()
-                        )
-                        .ToList();
-
-                    var dataEnumerator = data.GetEnumerator();
-                    List<string> rowCells = null;
-
-                    Func<bool> moveNextFunc = () =>
-                        dataEnumerator.MoveNext() && (rowCells = dataEnumerator.Current) != null && rowCells.Count != 0 && !String.IsNullOrWhiteSpace(rowCells[0]);
-
-
-                    string worpbookPartId = spreadsheet.WorkbookPart.GetIdOfPart(worksheetPart);
-                    Sheet sheet = workbookPart.Workbook.Sheets.Cast<Sheet>().First(s => s.Id == worpbookPartId);
-                    var newGroup = new ResGroupModel<TModel> { GroupTitle = sheet.Name };
-
                     var tables = new List<ResTableModel<TModel>>();
+                    var newGroup = new ResGroupModel<TModel> { GroupTitle = worksheetPart.Name, Tables = tables };
 
+                    var cells = worksheetPart.Cells.Select(cell => new {cell.Start.Row, cell.Start.Column, Value = (string) cell.Value}).ToList();
+                    int maxRow = cells.Max(c => c.Row);
 
-                    while (moveNextFunc())
+                    string[][] cellsArray = new string[maxRow][];
+
+                    foreach (var row in cells.GroupBy(c => c.Row))
                     {
-                        var newTable = new ResTableModel<TModel>
-                        {
-                            TableTitle = rowCells[0]
-                        };
+                        cellsArray[row.Key - 1] = row.OrderBy(c => c.Column).Select(c => c.Value).ToArray();
+                    }
 
-                        dataEnumerator.MoveNext();
-                        moveNextFunc();
+                    for (int i = 0; i < cellsArray.Length; i++)
+                    {
+                        var table = new ResTableModel<TModel>();
 
-                        newTable.Header = new HeaderModel
-                        {
-                            Columns = rowCells.Select(cell => new ColumnModel {Title = cell}).ToList()
-                        };
+                        table.TableTitle = cellsArray[i][0];
+
+                        i += 2;
+                        table.Header = new HeaderModel {Columns = cellsArray[i].Select(c => new ColumnModel {Title = c}).ToList()};
 
                         var rows = new List<RowModel<TModel>>();
-                        while (moveNextFunc())
+                        string[] rowsArray;
+                        while (++i < cellsArray.Length && (rowsArray = cellsArray[i]) != null)
                         {
-                            var tableRow = new RowModel<TModel>
+                            rows.Add(new RowModel<TModel>
                             {
                                 Model = new TModel
                                 {
-                                    DataList = rowCells.Select(cell => new CellModel {Model = cell}).ToList()
+                                    DataList = rowsArray.Select(a => new CellModel {DataString = a}).ToList()
                                 }
-                            };
-
-                            rows.Add(tableRow);
+                            });
                         }
 
-                        newTable.Rows = rows;
-
-                        tables.Add(newTable);
-
-                        //Space between resources
+                        table.Rows = rows;
                     }
 
-                    newGroup.Tables = tables;
                     dataList.Add(newGroup);
                 }
 
@@ -214,16 +184,25 @@ namespace Common.Excel.Implementation
             }
         }
 
-        private static Func<string, string> GetSharedStringItemById(WorkbookPart workbookPart)
+        public static double GetDefaultFontWidth(ExcelStyle style, string text)
         {
-            var sharedStringItems = workbookPart.SharedStringTablePart.SharedStringTable.Elements<SharedStringItem>().ToList();
+            string font = style.Font.Name;
+            int fontSize = (int)style.Font.Size;
+            Font stringFont = new Font(font, fontSize);
+            return GetWidth(stringFont, text) + 2.0;
+        }
 
-            if (!sharedStringItems.Any())
-            {
-                return val=>val;
-            }
+        private static double GetWidth(Font stringFont, string text)
+        {
+            // This formula is based on this article plus a nudge ( + 0.2M )
+            // http://msdn.microsoft.com/en-us/library/documentformat.openxml.spreadsheet.column.width.aspx
+            // Truncate(((256 * Solve_For_This + Truncate(128 / 7)) / 256) * 7) = DeterminePixelsOfString
 
-            return val => sharedStringItems[int.Parse(val)].InnerText;
+            Size textSize = TextRenderer.MeasureText(text, stringFont, new Size(int.MaxValue, int.MaxValue), TextFormatFlags.SingleLine | TextFormatFlags.LeftAndRightPadding);
+            double width = (((textSize.Width / (double)7) * 256) - ((double)128 / 7)) / 256;
+            width = (double)decimal.Round((decimal)width + 0.2M, 2);
+
+            return width;
         }
     }
 }
