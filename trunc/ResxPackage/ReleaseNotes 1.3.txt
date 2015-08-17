@@ -1,0 +1,4 @@
+﻿Changed excel library.
+New excel library is much lighter and convinient.
+https://excelpackage.codeplex.com/
+https://www.nuget.org/packages/EPPlus/ 

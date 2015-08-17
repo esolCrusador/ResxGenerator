@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="0E6CC049-E4CB-41F3-B5FE-CE60E68BC549" Version="1.2.2" Language="en-US" Publisher="esolCrusador" />
+    <Identity Id="0E6CC049-E4CB-41F3-B5FE-CE60E68BC549" Version="1.3.0" Language="en-US" Publisher="esolCrusador" />
     <DisplayName>Resx</DisplayName>
     <Description xml:space="preserve">Project "Resx Sync" is created to add ability to developers automatically synchronise *.resx files of different cultures based on default culture and to export/import project resources to/from *.xlsx files.</Description>
     <MoreInfo>https://github.com/esolCrusador/ResxGenerator</MoreInfo>
     <License>Resources\License.txt</License>
     <GettingStartedGuide>https://github.com/esolCrusador/ResxGenerator/wiki</GettingStartedGuide>
-    <ReleaseNotes>ReleaseNotes 1.2.1.txt</ReleaseNotes>
+    <ReleaseNotes>ReleaseNotes 1.3.txt</ReleaseNotes>
     <Icon>Resources\Package.ico</Icon>
     <PreviewImage>Resources\ResxGen.png</PreviewImage>
     <Tags>Resx, Resources, Excel, Import, Export, Sync</Tags>

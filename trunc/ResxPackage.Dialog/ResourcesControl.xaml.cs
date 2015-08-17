@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
+using Common.Excel.Contracts;
 using Common.Excel.Implementation;
 using EnvDTE;
 using Google.GData.Client;
@@ -35,7 +36,7 @@ namespace GloryS.ResourcesPackage
         private readonly Action<string, string, DialogIcon> _showDialogAction;
         private readonly List<string> _logMessages;
 
-        private readonly ExcelGenerator _excelGenerator;
+        private readonly IDocumentGenerator _excelGenerator;
 
         private OAuth2Parameters _googleOAuth2Parameters;
         private GoogleDocGenerator _googleDocGenerator;
