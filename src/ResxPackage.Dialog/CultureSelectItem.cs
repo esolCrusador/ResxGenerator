@@ -8,7 +8,7 @@ namespace ResxPackage.Dialog
 {
     public class CultureSelectItem : INotifyPropertyChanged
     {
-        private static readonly int InvariantCultureId = CultureInfo.InvariantCulture.LCID;
+        private static readonly string InvariantCultureId = CultureInfo.InvariantCulture.Name;
         private bool _isVisible;
         private bool _isSelected;
 
@@ -18,7 +18,7 @@ namespace ResxPackage.Dialog
 
         public CultureSelectItem(CultureInfo culture, bool isSelected)
         {
-            CultureId = culture.LCID;
+            CultureId = culture.Name;
             CultureName = String.Format("{0} ({1})", culture.Name, culture.DisplayName);
             IsSelected = isSelected;
             InitiallySelected = isSelected;
@@ -31,7 +31,7 @@ namespace ResxPackage.Dialog
         {
         }
 
-        public int CultureId { get; set; }
+        public string CultureId { get; set; }
 
         public string CultureName { get; set; }
 

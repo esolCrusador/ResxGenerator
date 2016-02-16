@@ -13,6 +13,6 @@ namespace ResourcesAutogenerate.DomainModels
 
         public IReadOnlyList<ProjectItem> ResourceProjectItems { get; set; }
 
-        public Dictionary<string, Dictionary<int, ResourceData>> Resources { get; set; }
+        public Dictionary<string, Dictionary<string, ResourceData>> Resources { get; set; }
     }
 }

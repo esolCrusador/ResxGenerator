@@ -9,12 +9,12 @@ namespace ResxPackage.Dialog.Models
 {
     public class ResourcesVm
     {
-        public ResourcesVm(IEnumerable<CultureInfo> culturesList, List<int> supportedCultures, IReadOnlyCollection<Project> projects, string solutionName)
+        public ResourcesVm(IEnumerable<CultureInfo> culturesList, List<string> supportedCultures, IReadOnlyCollection<Project> projects, string solutionName)
         {
             ProjectsList = new ObservableCollection<ProjectSelectItem>(projects.Select(proj => new ProjectSelectItem(proj)));
             Projects = projects;
 
-            List<CultureSelectItem> cultures = culturesList.Select(cul => new CultureSelectItem(cul, supportedCultures.Contains(cul.LCID))).OrderBy(cul => cul.CultureName).ToList();
+            List<CultureSelectItem> cultures = culturesList.OrderBy(cul => cul.LCID).ThenBy(cul => cul.Name).Select(cul => new CultureSelectItem(cul, supportedCultures.Contains(cul.Name))).ToList();
             CulturesList = new ObservableCollection<CultureSelectItem>(cultures.Where(cul => !cul.IsSelected));
             SelectedCulturesList = new ObservableCollection<CultureSelectItem>(cultures.Where(cul => cul.IsSelected));
 
@@ -43,7 +43,7 @@ namespace ResxPackage.Dialog.Models
 
         public IReadOnlyCollection<Project> Projects { get; set; }
 
-        public IReadOnlyCollection<int> SelectedCultures
+        public IReadOnlyCollection<string> SelectedCultures
         {
             get { return SelectedCulturesList.Where(cul=>cul.IsSelected).Select(c => c.CultureId).ToList(); }
         }
@@ -53,7 +53,7 @@ namespace ResxPackage.Dialog.Models
             get { return Projects.Where(proj => ProjectsList.Where(pi => pi.IsSelected).Any(pi => pi.Equals(proj))).ToList(); }
         }
 
-        public void UpdateSelectedCultures(bool isSelected, int cultureId)
+        public void UpdateSelectedCultures(bool isSelected, string cultureId)
         {
             ObservableCollection<CultureSelectItem> sourceCollection;
             ObservableCollection<CultureSelectItem> destCollection;

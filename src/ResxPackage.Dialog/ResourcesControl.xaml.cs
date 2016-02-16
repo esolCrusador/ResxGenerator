@@ -105,27 +105,27 @@ namespace GloryS.ResourcesPackage
                 )
                 .ToList();
 
-            List<int> supportedCultures = projectsList
+            List<string> supportedCultures = projectsList
                 .SelectMany(proj => proj.GetAllItems().Select(item => item.Name).Where(itemName => Path.GetExtension(itemName) == ".resx")
                     .Select(Path.GetFileNameWithoutExtension)
                     .Select(fileName =>
                     {
                         string cultureName = Path.GetExtension(fileName);
 
-                        int culture;
+                        string culture;
                         if (String.IsNullOrEmpty(cultureName))
                         {
-                            culture =  CultureInfo.InvariantCulture.LCID;
+                            culture =  CultureInfo.InvariantCulture.Name;
                         }
                         else
                         {
                             try
                             {
-                                culture = CultureInfo.GetCultureInfo(cultureName.Substring(1)).LCID;
+                                culture = CultureInfo.GetCultureInfo(cultureName.Substring(1)).Name;
                             }
                             catch (CultureNotFoundException)
                             {
-                                culture = CultureInfo.InvariantCulture.LCID;
+                                culture = CultureInfo.InvariantCulture.Name;
                             }
                         }
 
@@ -134,7 +134,7 @@ namespace GloryS.ResourcesPackage
                 .Distinct()
                 .ToList();
 
-            ViewModel = new ResourcesVm(CultureInfo.GetCultures(CultureTypes.NeutralCultures), supportedCultures, projectsList, Path.GetFileNameWithoutExtension(solution.FullName));
+            ViewModel = new ResourcesVm(CultureInfo.GetCultures(CultureTypes.AllCultures), supportedCultures, projectsList, Path.GetFileNameWithoutExtension(solution.FullName));
 
             this.DataContext = ViewModel;
         }
@@ -265,7 +265,7 @@ namespace GloryS.ResourcesPackage
         private void CheckBoxZone_CheckChanged(object sender, RoutedEventArgs e)
         {
             var checkBox = (ToggleButton)sender;
-            var cultureId = (int)checkBox.Tag;
+            var cultureId = (string)checkBox.Tag;
 
             ViewModel.UpdateSelectedCultures(checkBox.IsChecked.HasValue && checkBox.IsChecked.Value, cultureId);
         }

@@ -18,7 +18,7 @@ namespace ResourcesAutogenerate
     public class ResourcesSchema : IResourceMerge
     {
         private static readonly string InvariantCultureDisplayName = PackageRes.DefaultCulture;
-        private static readonly int InvariantCultureId = CultureInfo.InvariantCulture.LCID;
+        private static readonly string InvariantCultureId = CultureInfo.InvariantCulture.Name;
         private static readonly HashSet<string> NonCultureExtensions = new HashSet<string> {".cshtml", ".aspx", ".ascx", ""};
 
         private ILogger _logger;
@@ -28,12 +28,12 @@ namespace ResourcesAutogenerate
             _logger = logger;
         }
 
-        public Task UpdateResourcesAsync(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken, UpdateResourcesOptions options)
+        public Task UpdateResourcesAsync(IReadOnlyCollection<string> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken, UpdateResourcesOptions options)
         {
             return Task.Run(() => UpdateResources(selectedCultures, selectedProjects, progress, cancellationToken, options), cancellationToken);
         }
 
-        public async Task ExportToDocumentAsync(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken)
+        public async Task ExportToDocumentAsync(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<string> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken)
         {
             progress.Report(StatusRes.GettingProjectsResources);
             SolutionResources solutionResources = await GetSolutionResourcesAsync(selectedCultures, selectedProjects, progress, cancellationToken);
@@ -42,11 +42,11 @@ namespace ResourcesAutogenerate
 
             var cultures = selectedCultures.Select(CultureInfo.GetCultureInfo)
                 .ToDictionary(
-                    cult => cult.LCID,
-                    cult => cult.LCID == InvariantCultureId ? InvariantCultureDisplayName : cult.TwoLetterISOLanguageName.ToUpper()
+                    cult => cult.Name,
+                    cult => cult.Name == InvariantCultureId ? InvariantCultureDisplayName : cult.Name.ToUpper()
                 );
 
-            var culturesOrder = new List<int>(cultures.Count)
+            var culturesOrder = new List<string>(cultures.Count)
             {
                 InvariantCultureId
             };
@@ -99,12 +99,12 @@ namespace ResourcesAutogenerate
             await documentGenerator.ExportToDocumentAsync(path, groups, progress, cancellationToken);
         }
 
-        public Task ImportFromDocumentAsync(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken)
+        public Task ImportFromDocumentAsync(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<string> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken)
         {
             return Task.Run(() => ImportFromDocument(documentGenerator, path, selectedCultures, selectedProjects, progress, cancellationToken), cancellationToken);
         }
 
-        private async Task ImportFromDocument(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken)
+        private async Task ImportFromDocument(IDocumentGenerator documentGenerator, string path, IReadOnlyCollection<string> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken)
         {
             IReadOnlyList<ResGroupModel<ResExcelModel>> data = await documentGenerator.ImportFromDocumentAsync<ResExcelModel>(path, progress, cancellationToken);
 
@@ -126,16 +126,16 @@ namespace ResourcesAutogenerate
                     int columnsCount = resource.ExcelResTable.Header.Columns.Count;
                     int culturesCount = columnsCount - 2;
 
-                    List<int> cultureIds = resource.ExcelResTable.Header.Columns
+                    List<string> cultureIds = resource.ExcelResTable.Header.Columns
                         .Skip(1)
-                        .Select(col => col.Title == InvariantCultureDisplayName ? InvariantCultureId : CultureInfo.GetCultureInfo(col.Title).LCID)
+                        .Select(col => col.Title == InvariantCultureDisplayName ? InvariantCultureId : CultureInfo.GetCultureInfo(col.Title).Name)
                         .Take(culturesCount)
                         .ToList();
                     List<string> resourceKeys = resource.ExcelResTable.Rows.Select(row => row.DataList[0].DataString).ToList();
                     List<string> comments = resource.ExcelResTable.Rows.Select(row => row.DataList[columnsCount - 1].DataString).ToList();
 
-                    Dictionary<int, IReadOnlyCollection<ResourceEntryData>> excelResources = cultureIds
-                        .Select((cultureId, index) => new KeyValuePair<int, IReadOnlyCollection<ResourceEntryData>>
+                    Dictionary<string, IReadOnlyCollection<ResourceEntryData>> excelResources = cultureIds
+                        .Select((cultureId, index) => new KeyValuePair<string, IReadOnlyCollection<ResourceEntryData>>
                             (
                             cultureId,
                             resourceKeys.Zip(
@@ -165,10 +165,10 @@ namespace ResourcesAutogenerate
             }
         }
 
-        public void UpdateResources(IReadOnlyCollection<int> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken, UpdateResourcesOptions options)
+        public void UpdateResources(IReadOnlyCollection<string> selectedCultures, IReadOnlyCollection<Project> selectedProjects, IStatusProgress progress, CancellationToken cancellationToken, UpdateResourcesOptions options)
         {
-            IReadOnlyDictionary<int, CultureInfo> selectedCultureInfos = selectedCultures.Select(CultureInfo.GetCultureInfo)
-                .ToDictionary(cult => cult.LCID, cult => cult);
+            IReadOnlyDictionary<string, CultureInfo> selectedCultureInfos = selectedCultures.Select(CultureInfo.GetCultureInfo)
+                .ToDictionary(cult => cult.Name, cult => cult);
 
             IReadOnlyDictionary<string, Project> projectsDictionary = selectedProjects.ToDictionary(proj => proj.UniqueName, proj => proj);
 
@@ -185,7 +185,7 @@ namespace ResourcesAutogenerate
             {
                 var project = projectsDictionary[projectResources.ProjectId];
 
-                foreach (Dictionary<int, ResourceData> resourceFileGroup in projectResources.Resources.Values)
+                foreach (Dictionary<string, ResourceData> resourceFileGroup in projectResources.Resources.Values)
                 {
                     //Removing culture files without neutral culture file. TODO: find if it is required.
                     ResourceData neutralCulture;
@@ -207,14 +207,14 @@ namespace ResourcesAutogenerate
 
                     var items2Remove = resourceFileGroup.Where(f => !selectedCultureInfos.ContainsKey(f.Key)).ToList();
 
-                    List<KeyValuePair<int, ProjectItem>> projectItems2Remove;
+                    List<KeyValuePair<string, ProjectItem>> projectItems2Remove;
                     if (items2Remove.Count == 0)
                     {
-                        projectItems2Remove = new List<KeyValuePair<int, ProjectItem>>(0);
+                        projectItems2Remove = new List<KeyValuePair<string, ProjectItem>>(0);
                     }
                     else
                     {
-                        projectItems2Remove = items2Remove.Select(d=> new KeyValuePair<int, ProjectItem>(d.Key, d.Value.ProjectItem)).ToList();
+                        projectItems2Remove = items2Remove.Select(d=> new KeyValuePair<string, ProjectItem>(d.Key, d.Value.ProjectItem)).ToList();
                     }
 
                     var cultures2Add = selectedCultureInfos.Where(cult => !resourceFileGroup.ContainsKey(cult.Key)).Select(cult => cult.Value).ToList();
@@ -232,7 +232,7 @@ namespace ResourcesAutogenerate
 
                     foreach (var cultureInfo in cultures2Add)
                     {
-                        string resourcePath = Path.Combine(Path.GetDirectoryName(neutralCulture.ResourcePath), Path.GetFileName(neutralCulture.ResourceName) + "." + cultureInfo.TwoLetterISOLanguageName.ToUpper() + ".resx");
+                        string resourcePath = Path.Combine(Path.GetDirectoryName(neutralCulture.ResourcePath), Path.GetFileName(neutralCulture.ResourceName) + "." + cultureInfo.Name.ToUpper() + ".resx");
 
                         using (File.Create(resourcePath)) { }
 
@@ -247,7 +247,7 @@ namespace ResourcesAutogenerate
                             resources: new Dictionary<string, ResXDataNode>(0)
                             );
 
-                        resourceFileGroup.Add(cultureInfo.LCID, newFile);
+                        resourceFileGroup.Add(cultureInfo.Name, newFile);
 
                         _logger.Log(String.Format(LoggerRes.AddedNewResource, newFile.ResourcePath));
                     }
@@ -388,12 +388,12 @@ namespace ResourcesAutogenerate
             return cultResources;
         }
 
-        private Task<SolutionResources> GetSolutionResourcesAsync(IEnumerable<int> selectedCultures, IReadOnlyCollection<Project> projects, IStatusProgress progress, CancellationToken cancellationToken)
+        private Task<SolutionResources> GetSolutionResourcesAsync(IEnumerable<string> selectedCultures, IReadOnlyCollection<Project> projects, IStatusProgress progress, CancellationToken cancellationToken)
         {
             return Task.Run(() => GetSolutionResources(selectedCultures, projects, progress, cancellationToken), cancellationToken);
         }
 
-        private SolutionResources GetSolutionResources(IEnumerable<int> selectedCultures, IReadOnlyCollection<Project> projects, IStatusProgress progress, CancellationToken cancellationToken)
+        private SolutionResources GetSolutionResources(IEnumerable<string> selectedCultures, IReadOnlyCollection<Project> projects, IStatusProgress progress, CancellationToken cancellationToken)
         {
             Func<ResourceData, bool> resourceFilesFilter;
             if (selectedCultures == null)
@@ -402,9 +402,9 @@ namespace ResourcesAutogenerate
             }
             else
             {
-                var selectedCulturesHashSet = new HashSet<int>(selectedCultures);
+                var selectedCulturesHashSet = new HashSet<string>(selectedCultures);
 
-                resourceFilesFilter = r => selectedCulturesHashSet.Contains(r.Culture.LCID);
+                resourceFilesFilter = r => selectedCulturesHashSet.Contains(r.Culture.Name);
             }
 
             var progresses = progress.CreateParallelProgresses(0.7, 0.3);
@@ -478,7 +478,7 @@ namespace ResourcesAutogenerate
                     })
                     .Where(resourceFilesFilter)
                     .GroupBy(res => res.ResourceName)
-                    .ToDictionary(resGroup => resGroup.Key, resGroup => resGroup.ToDictionary(res => res.Culture.LCID, res => res));
+                    .ToDictionary(resGroup => resGroup.Key, resGroup => resGroup.ToDictionary(res => res.Culture.Name, res => res));
             }
 
 
